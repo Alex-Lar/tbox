@@ -28,14 +28,14 @@ class TemplateManager {
   }
 
   /**
-   * @throws {TemplateExistsError} when template already exists
-   * @throws {TemplateNotFoundError} when template not found
+   * @throws {TemplateExistsError} if template already exists
+   * @throws {TemplateNotFoundError} if template not found
    */
   async createTemplate(data: TemplateData<AddOptions>): Promise<void> {
     const { sources, options } = data;
     const { templateName, overwrite, force, recursive } = options;
 
-    await this.validateSources(sources, recursive);
+    await this.validateSources(sources, { recursive, force });
 
     const { files, dirs } = await splitFilesAndDirs(sources);
     const destination = path.join(this.storage, templateName);
@@ -58,17 +58,25 @@ class TemplateManager {
       );
     }
 
-    await mkdir(destination);
+    try {
+      await mkdir(destination);
 
-    await this.copyTemplateAssets({
-      destination,
-      dirs,
-      files,
-      opts: {
-        force: force || overwrite,
-        recursive,
-      },
-    });
+      await this.copyTemplateAssets({
+        destination,
+        dirs,
+        files,
+        opts: {
+          force: force || overwrite,
+          recursive,
+        },
+      });
+    } catch (err) {
+      if (await isExists(destination)) {
+        await rm(destination);
+      }
+
+      throw err;
+    }
   }
 
   /**
@@ -96,17 +104,18 @@ class TemplateManager {
       throw new FileSystemOperationError(
         'copy assets',
         data.destination,
-        err instanceof Error ? err : new Error(String(err))
+        err instanceof Error ? err : new Error(String(err)),
+        "Use '--force' to overwrite"
       );
     }
   }
 
   /**
-   * @throws {SourceValidationError} if source are invalid
+   * @throws {SourceValidationError} if source files are invalid or source dirs are empty
    */
   private async validateSources(
     sources: string[],
-    isRecursive = false
+    { recursive = false, force = false }
   ): Promise<void> {
     const invalidPaths: string[] = [];
     const emptyDirs: string[] = [];
@@ -121,29 +130,22 @@ class TemplateManager {
 
       const isEmpty = await isEmptyDir(source);
 
-      if (!isRecursive && isEmpty) {
+      if (!recursive && isEmpty) {
         emptyDirs.push(source);
         continue;
       }
 
-      if (isRecursive && isEmpty) {
+      if (recursive && isEmpty) {
         emptyDirs.push(source);
         continue;
       }
     }
 
-    if (emptyDirs.length > 0) {
-      throw new SourceValidationError(
-        `Cannot copy empty director${emptyDirs.length > 1 ? 'ies' : 'y'}`,
-        [...emptyDirs]
-      );
-    }
-
-    if (invalidPaths.length > 0) {
-      throw new SourceValidationError(
-        `Invalid source${invalidPaths.length > 1 ? 's' : ''}`,
-        invalidPaths
-      );
+    if (invalidPaths.length > 0 || (emptyDirs.length > 0 && !force)) {
+      throw new SourceValidationError({
+        emptyDirs,
+        invalidPaths,
+      });
     }
   }
 }

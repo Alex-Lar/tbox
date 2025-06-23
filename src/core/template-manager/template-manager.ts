@@ -42,10 +42,7 @@ class TemplateManager {
     const destinationExists = await isExists(destination);
 
     if (destinationExists && !(overwrite || force)) {
-      throw new TemplateExistsError(
-        templateName,
-        `Use '--overwrite' to overwrite existing template.`
-      );
+      throw new TemplateExistsError(templateName);
     }
 
     if (destinationExists && overwrite) {

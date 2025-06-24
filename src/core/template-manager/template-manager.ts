@@ -48,11 +48,7 @@ class TemplateManager {
     if (destinationExists && overwrite) {
       await rm(destination);
     } else if (!destinationExists && overwrite && !force) {
-      throw new TemplateNotFoundError(
-        templateName,
-        "Use without '--overwrite' to create new template " +
-          "(or use '--force' to force your way anyway)'"
-      );
+      throw new TemplateNotFoundError(templateName);
     }
 
     try {

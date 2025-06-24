@@ -17,11 +17,7 @@ export const handleError = (err: unknown): never => {
     Logger.debug('Path:', err.path);
     Logger.debug('Original error:', err.originalError);
   } else if (err instanceof TemplateNotFoundError) {
-    Logger.error(err.message);
-
-    if (err.solution) {
-      Logger.info(err.solution);
-    }
+    Logger.error(err.formatForDisplay());
   } else if (err instanceof TemplateExistsError) {
     Logger.error(err.formatForDisplay());
   } else if (err instanceof SourceValidationError) {
@@ -29,5 +25,6 @@ export const handleError = (err: unknown): never => {
   } else {
     Logger.error('Fatal error:', err);
   }
+
   process.exit(1);
 };

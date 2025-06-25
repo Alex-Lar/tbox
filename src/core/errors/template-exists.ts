@@ -8,6 +8,7 @@ export class TemplateExistsError extends Error implements PrettyError {
   constructor(templateName: string) {
     super(`Template already exists: '${templateName}'`);
 
+    this.name = 'TemplateExistsError';
     this.templateName = templateName;
     this.solution = this.generateSolution();
   }

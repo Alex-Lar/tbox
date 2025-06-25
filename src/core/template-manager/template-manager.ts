@@ -95,10 +95,9 @@ class TemplateManager {
       await Promise.all(copyOperations);
     } catch (err: unknown) {
       throw new FileSystemOperationError(
-        'copy assets',
+        'COPY',
         data.destination,
-        err instanceof Error ? err : new Error(String(err)),
-        "Use '--force' to overwrite"
+        err instanceof Error ? err : new Error(String(err))
       );
     }
   }

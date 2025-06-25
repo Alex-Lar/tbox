@@ -8,14 +8,7 @@ import Logger from './logger';
 
 export const handleError = (err: unknown): never => {
   if (err instanceof FileSystemOperationError) {
-    Logger.error(
-      'Error copying files: Duplicate files or empty directories cannot be copied.'
-    );
-    Logger.info('Solution:\n\t' + err.solution + '\n');
-
-    Logger.debug('Operation:', err.operation);
-    Logger.debug('Path:', err.path);
-    Logger.debug('Original error:', err.originalError);
+    Logger.error(err.formatForDisplay());
   } else if (err instanceof TemplateNotFoundError) {
     Logger.error(err.formatForDisplay());
   } else if (err instanceof TemplateExistsError) {

@@ -42,20 +42,13 @@ class TemplateManager {
     const destinationExists = await isExists(destination);
 
     if (destinationExists && !(overwrite || force)) {
-      throw new TemplateExistsError(
-        templateName,
-        `Use '--overwrite' to overwrite existing template.`
-      );
+      throw new TemplateExistsError(templateName);
     }
 
     if (destinationExists && overwrite) {
       await rm(destination);
     } else if (!destinationExists && overwrite && !force) {
-      throw new TemplateNotFoundError(
-        templateName,
-        "Use without '--overwrite' to create new template " +
-          "(or use '--force' to force your way anyway)'"
-      );
+      throw new TemplateNotFoundError(templateName);
     }
 
     try {
@@ -102,10 +95,9 @@ class TemplateManager {
       await Promise.all(copyOperations);
     } catch (err: unknown) {
       throw new FileSystemOperationError(
-        'copy assets',
+        'COPY',
         data.destination,
-        err instanceof Error ? err : new Error(String(err)),
-        "Use '--force' to overwrite"
+        err instanceof Error ? err : new Error(String(err))
       );
     }
   }

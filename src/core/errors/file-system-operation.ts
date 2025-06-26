@@ -1,23 +1,57 @@
-export class FileSystemOperationError extends Error {
+import {
+  BULLET_SYMBOL,
+  ANGLE_QUOTE_SYMBOL,
+  INFO_SYMBOL,
+  ERROR_SYMBOL,
+} from '../constants/symbols';
+import { PrettyError } from './types';
+
+export class FileSystemOperationError extends Error implements PrettyError {
+  static readonly OPERATIONS = {
+    COPY: 'copy assets',
+  } as const;
+
   readonly operation: string;
-  readonly path: string;
+  readonly destination: string;
   readonly originalError: Error;
   readonly solution: string;
 
   constructor(
-    operation: string,
-    path: string,
-    originalError: Error,
-    solution = ''
+    operation: keyof typeof FileSystemOperationError.OPERATIONS,
+    destination: string,
+    originalError: Error
   ) {
-    const message = `File system operation failed: ${operation} '${path}'\n`;
-
-    super(message);
+    super(
+      `Filesystem operation failed: ${FileSystemOperationError.OPERATIONS[operation]}`
+    );
 
     this.name = 'FileSystemOperationError';
     this.operation = operation;
-    this.path = path;
+    this.destination = destination;
     this.originalError = originalError;
-    this.solution = solution;
+    this.solution = this.generateSolution();
+  }
+
+  private generateSolution(): string {
+    return [
+      `  ${BULLET_SYMBOL} Verify source paths exist and are accessible`,
+      `  ${BULLET_SYMBOL} Use --force to skip/overwrite conflicting files`,
+    ].join('\n');
+  }
+
+  formatForDisplay(): string {
+    const parts: string[] = [];
+
+    parts.push(this.message + '\n');
+
+    parts.push(
+      `${ERROR_SYMBOL} Original message:\n  ${ANGLE_QUOTE_SYMBOL} ` +
+        this.originalError.message +
+        '\n'
+    );
+
+    parts.push(`${INFO_SYMBOL} Solutions:\n${this.solution}`);
+
+    return parts.join('\n');
   }
 }

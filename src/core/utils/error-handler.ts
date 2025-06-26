@@ -1,23 +1,15 @@
-import {
-  FileSystemOperationError,
-  SourceValidationError,
-  TemplateExistsError,
-  TemplateNotFoundError,
-} from '../errors';
+import { PrettyError } from 'core/errors/types';
 import Logger from './logger';
 
 export const handleError = (err: unknown): never => {
-  if (err instanceof FileSystemOperationError) {
-    Logger.error(err.formatForDisplay());
-  } else if (err instanceof TemplateNotFoundError) {
-    Logger.error(err.formatForDisplay());
-  } else if (err instanceof TemplateExistsError) {
-    Logger.error(err.formatForDisplay());
-  } else if (err instanceof SourceValidationError) {
+  if (isPrettyError(err)) {
     Logger.error(err.formatForDisplay());
   } else {
-    Logger.error('Fatal error:', err);
+    Logger.error('Unexpected error:', err);
   }
-
   process.exit(1);
 };
+
+function isPrettyError(error: unknown): error is PrettyError {
+  return typeof (error as PrettyError)?.formatForDisplay === 'function';
+}

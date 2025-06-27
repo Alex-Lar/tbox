@@ -1,8 +1,8 @@
 import { program } from 'commander';
-import { createTemplateManager } from './core/template-manager'; 
-import { getAppPaths } from './core/paths'; 
-import { handleError } from './core/utils/error-handler'; 
-import { APP_NAME } from './core/constants/app'; 
+import { createTemplateManager } from './core/template-manager';
+import { getAppPaths } from './core/paths';
+import { handleError } from './core/utils/error-handler';
+import { APP_NAME } from './core/constants/app';
 import { createAddCommand } from './commands';
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
   };
 
   program
-    .name('tb')
+    .name(APP_NAME)
     .description(
       'Lightweight CLI for saving and reusing file/directory templates'
     );

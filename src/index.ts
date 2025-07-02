@@ -4,12 +4,14 @@ import { getAppPaths } from './core/paths';
 import { handleError } from './core/utils/error-handler';
 import { APP_NAME } from './core/constants/app';
 import { createAddCommand } from './commands';
+import FileManager from './core/file-manager';
 
 async function main() {
-  let paths = getAppPaths(APP_NAME);
+  const paths = getAppPaths(APP_NAME);
+  const fileManager = new FileManager();
 
   const deps = {
-    manager: createTemplateManager({ storage: paths.data }),
+    manager: createTemplateManager({ storage: paths.data, fileManager }),
   };
 
   program

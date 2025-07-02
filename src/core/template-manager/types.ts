@@ -1,7 +1,9 @@
-import { CopyOptions } from "../utils/fs"; 
+import FileManager from '../file-manager';
+import type { CopyOptions } from '../file-manager';
 
 export interface TemplateManagerConfig {
-    storage: string
+  storage: string;
+  fileManager: FileManager;
 }
 
 export interface TemplateData<T> {

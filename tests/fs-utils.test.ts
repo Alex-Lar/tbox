@@ -1,31 +1,30 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { vol } from 'memfs';
 import path from 'path';
-import {
-  isExists,
-  ensureDir,
-  containsAnySource,
-  findDuplicateNames,
-} from '../src/core/utils/fs';
+import FileManager from '../src/core/file-manager';
 
 vi.mock('node:fs/promises');
 
-describe(`${isExists.name}()`, () => {
+describe('isExists()', () => {
+  let fileManager: FileManager;
+
   beforeEach(() => {
     vol.reset();
     vi.clearAllMocks();
+
+    fileManager = new FileManager();
   });
 
   test('returns true when file exists', async () => {
     const filename = '/test-file.txt';
     vol.writeFileSync(filename, 'content');
 
-    const result = await isExists(filename);
+    const result = await fileManager.isExists(filename);
     expect(result).toBe(true);
   });
 
   test('returns false when file not exists', async () => {
-    const result = await isExists('/non-existent-file.txt');
+    const result = await fileManager.isExists('/non-existent-file.txt');
     expect(result).toBe(false);
   });
 
@@ -33,7 +32,7 @@ describe(`${isExists.name}()`, () => {
     let dirname = '/test-dir';
     vol.mkdirSync(dirname, { recursive: true });
 
-    const result = await isExists(dirname);
+    const result = await fileManager.isExists(dirname);
     expect(result).toBe(true);
   });
 
@@ -43,17 +42,23 @@ describe(`${isExists.name}()`, () => {
     vol.mkdirSync(dirname, { recursive: true });
     vol.writeFileSync(path.join(dirname, filename), 'hello');
 
-    expect(await isExists('/nested/folder/file.txt')).toBe(true);
-    expect(await isExists('/nested/folder')).toBe(true);
-    expect(await isExists('/nested')).toBe(true);
-    expect(await isExists('/nested/folder/non-existent.txt')).toBe(false);
+    expect(await fileManager.isExists('/nested/folder/file.txt')).toBe(true);
+    expect(await fileManager.isExists('/nested/folder')).toBe(true);
+    expect(await fileManager.isExists('/nested')).toBe(true);
+    expect(await fileManager.isExists('/nested/folder/non-existent.txt')).toBe(
+      false
+    );
   });
 });
 
-describe(`${findDuplicateNames.name}()`, () => {
+describe('findDuplicateNames()', () => {
+  let fileManager: FileManager;
+
   beforeEach(() => {
     vol.reset();
     vi.clearAllMocks();
+
+    fileManager = new FileManager();
   });
 
   test('returns true when at least one file exists in destination', async () => {
@@ -66,17 +71,21 @@ describe(`${findDuplicateNames.name}()`, () => {
       vol.writeFileSync(path.join(destination, file), `#${i}`);
     });
 
-    let result = await findDuplicateNames(destination, sources);
+    let result = await fileManager.findDuplicateNames(destination, sources);
     console.log('Dublicates:', result);
 
     expect(true).toBe(true);
   });
 });
 
-describe(`${containsAnySource.name}()`, () => {
+describe('containsAnySource()', () => {
+  let fileManager: FileManager;
+
   beforeEach(() => {
     vol.reset();
     vi.clearAllMocks();
+
+    fileManager = new FileManager();
   });
 
   test('returns true when at least one file exists in destination', async () => {
@@ -89,7 +98,9 @@ describe(`${containsAnySource.name}()`, () => {
       vol.writeFileSync(path.join(destination, file), `#${i}`);
     });
 
-    expect(await containsAnySource(destination, sources)).toBe(true);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      true
+    );
   });
 
   test('returns true when at least one directory exists in destination', async () => {
@@ -104,7 +115,9 @@ describe(`${containsAnySource.name}()`, () => {
       vol.writeFileSync(path.join(destination, file), `#${i}`);
     });
 
-    expect(await containsAnySource(destination, sources)).toBe(true);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      true
+    );
   });
 
   test('returns true when multiple sources exist in destination', async () => {
@@ -117,7 +130,9 @@ describe(`${containsAnySource.name}()`, () => {
       vol.writeFileSync(path.join(destination, file), `#${i}`);
     });
 
-    expect(await containsAnySource(destination, sources)).toBe(true);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      true
+    );
   });
 
   test('returns false when no sources exist in destination', async () => {
@@ -130,14 +145,18 @@ describe(`${containsAnySource.name}()`, () => {
       vol.writeFileSync(path.join(destination, file), `#${i}`);
     });
 
-    expect(await containsAnySource(destination, sources)).toBe(false);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      false
+    );
   });
 
   test('returns false when destination directory does not exist', async () => {
     const destination = '/dest';
     const sources = ['main.c', 'main.java', 'some-directory'];
 
-    expect(await containsAnySource(destination, sources)).toBe(false);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      false
+    );
   });
 
   test('returns false when sources array is empty', async () => {
@@ -145,7 +164,9 @@ describe(`${containsAnySource.name}()`, () => {
     const sources: string[] = [];
     vol.mkdirSync(destination, { recursive: true });
 
-    expect(await containsAnySource(destination, sources)).toBe(false);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      false
+    );
   });
 
   test('returns false for empty string in sources', async () => {
@@ -153,20 +174,26 @@ describe(`${containsAnySource.name}()`, () => {
     const sources: string[] = [''];
     vol.mkdirSync(destination, { recursive: true });
 
-    expect(await containsAnySource(destination, sources)).toBe(false);
+    expect(await fileManager.containsAnySource(destination, sources)).toBe(
+      false
+    );
   });
 });
 
-describe(`${ensureDir.name}()`, () => {
+describe('ensureDir()', () => {
+  let fileManager: FileManager;
+
   beforeEach(() => {
     vol.reset();
     vi.clearAllMocks();
+
+    fileManager = new FileManager();
   });
 
   test('should create directory when not exists', async () => {
     const dirpath = '/new-directory';
 
-    await ensureDir(dirpath);
+    await fileManager.ensureDir(dirpath);
 
     expect(vol.existsSync(dirpath)).toBe(true);
     expect(vol.statSync(dirpath).isDirectory()).toBe(true);
@@ -175,7 +202,7 @@ describe(`${ensureDir.name}()`, () => {
   test('should create nested directories', async () => {
     const nestedPath = '/nested/path/with/multiple/directories';
 
-    await ensureDir(nestedPath);
+    await fileManager.ensureDir(nestedPath);
 
     expect(vol.existsSync(nestedPath)).toBe(true);
     expect(vol.statSync(nestedPath).isDirectory()).toBe(true);
@@ -185,13 +212,13 @@ describe(`${ensureDir.name}()`, () => {
     const filepath = '/existing-file.txt';
     vol.writeFileSync(filepath, 'content');
 
-    expect(await ensureDir(filepath)).toBe(undefined);
+    expect(await fileManager.ensureDir(filepath)).toBe(undefined);
   });
 
   test('should return undefined when path is already exists', async () => {
     const dirpath = '/existing/dir';
     vol.mkdirSync(dirpath, { recursive: true });
 
-    expect(await ensureDir(dirpath)).toBe(undefined);
+    expect(await fileManager.ensureDir(dirpath)).toBe(undefined);
   });
 });

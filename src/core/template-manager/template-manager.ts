@@ -1,30 +1,22 @@
 import path from 'node:path';
 import { CopyData, TemplateData, TemplateManagerConfig } from './types';
 import {
-  copyDirectories,
-  copyFiles,
-  copyFilesFromDirectories,
-  isDir,
-  isEmptyDir,
-  isExists,
-  mkdir,
-  rm,
-  splitFilesAndDirs,
-} from '../utils/fs';
-import {
   FileSystemOperationError,
   SourceValidationError,
   TemplateExistsError,
   TemplateNotFoundError,
 } from '../errors';
 import { AddOptions } from 'commands/add';
+import FileManager from '../file-manager';
 
 class TemplateManager {
   readonly storage: string;
+  private fileManager: FileManager;
 
   constructor(config: TemplateManagerConfig) {
-    const { storage } = config;
+    const { storage, fileManager } = config;
     this.storage = storage;
+    this.fileManager = fileManager;
   }
 
   /**
@@ -37,22 +29,22 @@ class TemplateManager {
 
     await this.validateSources(sources, { recursive, force });
 
-    const { files, dirs } = await splitFilesAndDirs(sources);
+    const { files, dirs } = await this.fileManager.splitFilesAndDirs(sources);
     const destination = path.join(this.storage, templateName);
-    const destinationExists = await isExists(destination);
+    const destinationExists = await this.fileManager.isExists(destination);
 
     if (destinationExists && !(overwrite || force)) {
       throw new TemplateExistsError(templateName);
     }
 
     if (destinationExists && overwrite) {
-      await rm(destination);
+      await this.fileManager.rm(destination);
     } else if (!destinationExists && overwrite && !force) {
       throw new TemplateNotFoundError(templateName);
     }
 
     try {
-      await mkdir(destination);
+      await this.fileManager.mkdir(destination);
 
       await this.copyTemplateAssets({
         destination,
@@ -64,8 +56,8 @@ class TemplateManager {
         },
       });
     } catch (err) {
-      if (await isExists(destination)) {
-        await rm(destination);
+      if (await this.fileManager.isExists(destination)) {
+        await this.fileManager.rm(destination);
       }
 
       throw err;
@@ -82,13 +74,20 @@ class TemplateManager {
       const copyOperations = [];
 
       if (files.length) {
-        copyOperations.push(copyFiles(files, destination, { force }));
+        copyOperations.push(
+          this.fileManager.copyFiles(files, destination, { force })
+        );
       }
 
       if (dirs.length) {
         const dirCopyFn = recursive
-          ? copyDirectories(dirs, destination, { force, recursive })
-          : copyFilesFromDirectories(dirs, destination, { force });
+          ? this.fileManager.copyDirectories(dirs, destination, {
+              force,
+              recursive,
+            })
+          : this.fileManager.copyFilesFromDirectories(dirs, destination, {
+              force,
+            });
         copyOperations.push(dirCopyFn);
       }
 
@@ -113,14 +112,14 @@ class TemplateManager {
     const emptyDirs: string[] = [];
 
     for (const source of sources) {
-      if (!(await isExists(source))) {
+      if (!(await this.fileManager.isExists(source))) {
         invalidPaths.push(source);
         continue;
       }
 
-      if (!(await isDir(source))) continue;
+      if (!(await this.fileManager.isDir(source))) continue;
 
-      const isEmpty = await isEmptyDir(source);
+      const isEmpty = await this.fileManager.isEmptyDir(source);
 
       if (!recursive && isEmpty) {
         emptyDirs.push(source);

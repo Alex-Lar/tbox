@@ -1,9 +1,9 @@
 import type { Operation } from '@core/operations';
-import { TemplateService } from '@core/services';
+import { CreateTemplateService } from '@core/services';
 import { CreateTemplateParams } from './types';
 
 class CreateTemplateOperation implements Operation<CreateTemplateParams> {
-  constructor(private service: TemplateService) {
+  constructor(private service: CreateTemplateService) {
     this.service = service;
   }
 

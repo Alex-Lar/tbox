@@ -1,6 +1,5 @@
 export interface AddOptions {
-  templateName: string;
-  recursive: boolean;
   force: boolean;
-  overwrite: boolean;
+  recursive: boolean;
+  exclude: boolean;
 }

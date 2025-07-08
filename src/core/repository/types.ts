@@ -20,3 +20,4 @@ export interface TemplateRepositoryInterface {
 export interface RepositoryTypes {
   TemplateRepository: symbol;
 }
+

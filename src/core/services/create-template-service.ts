@@ -16,12 +16,14 @@ class CreateTemplateService {
     sources,
     options,
   }: CreateTemplateParams) {
-    console.log(templateName);
-    console.log(sources);
     console.log(options);
-    // implementation
 
-    
+    const template = {
+      name: this.validator.validateName(templateName),
+      files: this.validator.validateSources(sources),
+    };
+
+    await this.repository.create(template, options);
   }
 }
 

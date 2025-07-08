@@ -11,3 +11,10 @@ export interface FilesAndDirsResult {
 export interface FileSystemTypes {
   FileSystemManager: symbol;
 }
+
+export interface CopyData {
+  destination: string;
+  files: string[];
+  dirs: string[];
+  options: CopyOptions;
+}

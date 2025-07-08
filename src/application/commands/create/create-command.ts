@@ -4,6 +4,7 @@ import { DIContainer } from '@infrastructure/container/types';
 import { Operation } from '@core/operations';
 import { DI_TYPES as DIT } from '@shared/constants';
 import { CreateTemplateParams } from '@core/operations/types';
+import Logger from '@shared/utils/logger';
 
 export default function buildCreateCommand(container: DIContainer) {
   return new Command('create')
@@ -14,11 +15,13 @@ export default function buildCreateCommand(container: DIContainer) {
     .option('-e, --exclude', 'files to exclude', '')
     .action(
       async (templateName: string, sources: string[], options: AddOptions) => {
+        Logger.info('Command create executing...');
         const operation = container.resolve<Operation<CreateTemplateParams>>(
           DIT.CreateTemplateOperation
         );
 
-        operation.execute({
+        Logger.info('Operation executing...');
+        await operation.execute({
           templateName,
           sources,
           options,

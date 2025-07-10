@@ -1,19 +1,26 @@
 import type { Operation } from '@core/operations';
-import { CreateTemplateService } from '@core/services';
+import { TemplateService } from '@core/services';
 import { CreateTemplateParams } from './types';
+import { inject, injectable } from 'tsyringe';
 
-class CreateTemplateOperation implements Operation<CreateTemplateParams> {
-  constructor(private service: CreateTemplateService) {
-    this.service = service;
-  }
+@injectable()
+export default class CreateTemplateOperation
+  implements Operation<CreateTemplateParams>
+{
+  constructor(
+    @inject('CreateTemplateService')
+    private service: TemplateService
+  ) {}
 
   async execute({
     templateName,
-    sources,
+    source,
     options,
   }: CreateTemplateParams): Promise<void> {
-    await this.service.createTemplate({ templateName, sources, options });
+    await this.service.createTemplate({
+      templateName,
+      source,
+      options,
+    });
   }
 }
-
-export default CreateTemplateOperation;

@@ -1,4 +1,4 @@
-import FileSystemManager from './filesystem-manager';
+import FileSystemManager from './fs-manager';
 import type { CopyOptions, FilesAndDirsResult } from './types';
 
 export default FileSystemManager;

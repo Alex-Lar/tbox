@@ -1,11 +1,12 @@
+import 'reflect-metadata';
 import { Application } from '@application/index';
-import Container from '@infrastructure/container/di-container';
 import { handleError } from '@shared/utils/error-handler';
+import TsyringeContainer from '@infrastructure/container/di-container';
 
 async function main() {
   try {
-    const container = new Container();
-    await new Application(container).bootstrap();
+    const diContainer = new TsyringeContainer().getContainer();
+    await new Application(diContainer).bootstrap();
   } catch (error) {
     handleError(error);
     process.exit(1);

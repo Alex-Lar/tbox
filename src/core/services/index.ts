@@ -1,5 +1,3 @@
-import CreateTemplateService from './create-template-service';
-import TemplateValidator from './template-validator';
-import type { ServiceTypes } from './types';
+import TemplateService from './template-service';
 
-export { CreateTemplateService, TemplateValidator, ServiceTypes };
+export { TemplateService };

@@ -1,29 +1,48 @@
 import { Command } from 'commander';
 import { AddOptions } from '@application/commands/create';
-import { DIContainer } from '@infrastructure/container/types';
-import { Operation } from '@core/operations';
-import { DI_TYPES as DIT } from '@shared/constants';
-import { CreateTemplateParams } from '@core/operations/types';
-import Logger from '@shared/utils/logger';
+import { CreateTemplateOperation } from '@core/operations';
+import { DIContainer } from '@shared/types/di';
 
 export default function buildCreateCommand(container: DIContainer) {
   return new Command('create')
     .argument('<template-name>', 'unique template name')
-    .argument('<files...>', 'sources to save as template')
+    .argument('<source...>', 'source to save as template')
     .option('-f, --force', 'create or update template', false)
     .option('-r, --recursive', 'copy directories recursively', false)
-    .option('-e, --exclude', 'files to exclude', '')
+    .option(
+      '-x, --exclude <patterns>',
+      'Exclude files/directories (comma-separated)',
+      (value) => value.split(',').map((p) => p.trim()),
+      []
+    )
+    .addHelpText(
+      'after',
+      `
+Examples for --exclude option:
+  node_modules    - exclude all node_modules directories
+  *.log           - exclude all log files
+  ./config.json   - exclude only the root config.json file
+`
+    )
     .action(
-      async (templateName: string, sources: string[], options: AddOptions) => {
-        Logger.info('Command create executing...');
-        const operation = container.resolve<Operation<CreateTemplateParams>>(
-          DIT.CreateTemplateOperation
+      async (templateName: string, source: string[], options: AddOptions) => {
+        console.log('Starting to resolve operation...');
+
+        const operation = container.resolve<CreateTemplateOperation>(
+          'CreateTemplateOperation'
         );
 
-        Logger.info('Operation executing...');
+        console.log(operation);
+        console.log('Operation is resolved!');
+
+        console.log('\n<> BuildCreateCommand <>');
+        console.log('\nname:', templateName);
+        console.log('sources:', source);
+        console.log('exclude:', options.exclude, '\n');
+
         await operation.execute({
           templateName,
-          sources,
+          source,
           options,
         });
       }

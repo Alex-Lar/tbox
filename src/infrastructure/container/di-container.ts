@@ -1,64 +1,53 @@
-import { SimpleFactory } from '@shared/types';
-import { DIContainer, DITypesKeys } from './types';
+import { CreateTemplateOperation } from '@core/operations';
+import TemplateRepository from '@core/repository';
+import { TemplateService } from '@core/services';
+import { FileSystemValidator, NamingValidator } from '@core/validators';
+import FileSystemManager from '@infrastructure/fs-manager';
+import { getAppPaths } from '@infrastructure/paths';
+import { APP_NAME } from '@shared/constants';
+import { DIContainer } from '@shared/types/di';
+import { container } from 'tsyringe';
 
-class Container implements DIContainer {
-  private singletons = new Map<DITypesKeys, unknown>();
-  private singletonFactories = new Map<DITypesKeys, SimpleFactory<unknown>>();
-  private transientFactories = new Map<DITypesKeys, SimpleFactory<unknown>>();
+export default class TsyringeContainer {
+  private container: DIContainer;
 
-  registerSingleton<T>(key: DITypesKeys, cb: SimpleFactory<T>): void {
-    if (this.singletons.has(key) || this.singletonFactories.has(key))
-      throw new Error('Container error: duplicate dependency');
-
-    if (typeof cb !== 'function')
-      throw new Error('Container error: callback should be a function');
-
-    this.singletonFactories.set(key, cb);
+  constructor() {
+    this.container = container.createChildContainer();
+    this.configureDependencies();
   }
 
-  register<T>(key: DITypesKeys, cb: SimpleFactory<T>): void {
-    if (this.transientFactories.has(key))
-      throw new Error('Container error: duplicate dependency');
+  private configureDependencies(): void {
+    // Infrastracture
+    this.container.registerSingleton(FileSystemManager);
+    this.container.registerInstance(
+      'STORAGE_TOKEN',
+      getAppPaths(APP_NAME).data
+    );
 
-    if (typeof cb !== 'function')
-      throw new Error('Container error: callback should be a function');
+    // Operations
+    this.container.register('CreateTemplateOperation', {
+      useClass: CreateTemplateOperation,
+    });
 
-    this.transientFactories.set(key, cb);
+    // Repository
+    this.container.register('TemplateRepository', {
+      useClass: TemplateRepository,
+    });
+
+    // Services
+    this.container.register('TemplateService', {
+      useClass: TemplateService,
+    });
+
+    // Validators
+    this.container.register('FileSystemValidator', {
+      useClass: FileSystemValidator,
+    });
+
+    this.container.register('NamingValidator', { useClass: NamingValidator });
   }
 
-  resolveSingleton<T>(key: DITypesKeys): T {
-    if (this.singletons.has(key)) {
-      return this.singletons.get(key) as T;
-    }
-
-    const factory = this.singletonFactories.get(key);
-    if (!factory) throw new Error('Container error: no such dependency!');
-
-    const instance = factory();
-
-    if (instance === null || instance === undefined) {
-      throw new Error(
-        `Singleton factory for key "${key.toString()}" returned null or undefined`
-      );
-    }
-
-    this.singletons.set(key, instance);
-
-    return instance as T;
-  }
-
-  resolve<T>(key: DITypesKeys): T {
-    const factory = this.transientFactories.get(key);
-
-    if (!factory) throw new Error('Container error: no such dependency!');
-
-    const instance = factory();
-
-    if (instance == null || instance == undefined)
-      throw new Error('Container error: callback returns null or undefined');
-
-    return instance as T;
+  getContainer(): DIContainer {
+    return this.container;
   }
 }
-
-export default Container;

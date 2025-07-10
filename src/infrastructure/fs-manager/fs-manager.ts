@@ -1,9 +1,13 @@
 import fs from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, join, parse } from 'node:path';
 import { tmpdir } from 'node:os';
-import { CopyData, CopyOptions, FilesAndDirsResult } from './types';
+import { CopyData, CopyOptions, CopyParams, FilesAndDirsResult } from './types';
 import { FileSystemOperationError } from '@shared/errors';
+import Logger from '@shared/utils/logger';
+import PathFilter from '@shared/utils/path-filter';
+import { singleton } from 'tsyringe';
 
+@singleton()
 class FileSystemManager {
   /**
    * Copies the specified files and directories to the destination path.
@@ -11,13 +15,22 @@ class FileSystemManager {
    * @throws {FileSystemOperationError} If an error occurs during copying of file system elements.
    */
   async copyAssets({ destination, dirs = [], files = [], options }: CopyData) {
+    console.log('\n <> FileSystemManager <>');
+    console.log('\ndest:', destination);
+    console.log('dirs:', dirs);
+    console.log('files:', files);
+    console.log('opts:', options);
+    console.log('');
     try {
       const copyOperations = [];
 
-      if (files.length)
+      if (files.length > 0) {
+        console.log('Adding copyFiles operation');
         copyOperations.push(this.copyFiles(files, destination, options));
+      }
 
-      if (dirs.length) {
+      if (dirs.length > 0) {
+        console.log('Adding dirCopy operation');
         const dirCopyStrategy = options.recursive
           ? this.copyDirectories(dirs, destination, options)
           : this.copyFilesFromDirectories(dirs, destination, options);
@@ -53,9 +66,17 @@ class FileSystemManager {
     }
   }
 
-  async makeTemporaryDirectory(dirname?: string) {
-    const tmpDirname = join(tmpdir(), `${dirname}-`);
-    return await fs.mkdtemp(tmpDirname);
+  async makeTemporaryDirectory(dirname: string): Promise<string> {
+    const dirnameParsed = parse(dirname);
+    const tmpPath = join(tmpdir(), dirnameParsed.dir);
+    try {
+      this.ensureDir(tmpPath);
+      const tmpDirname = join(tmpPath, `${dirnameParsed.base}-`);
+      return await fs.mkdtemp(tmpDirname);
+    } catch (error) {
+      console.error('Error while creating temporary directory');
+      throw error;
+    }
   }
 
   async rename(oldPath: string, newPath: string): Promise<void> {
@@ -151,8 +172,14 @@ class FileSystemManager {
   async copyFile(
     source: string,
     destination: string,
-    options: Pick<CopyOptions, 'force'>
+    options: Pick<CopyParams, 'force' | 'exclude'>
   ) {
+    if (options.exclude && PathFilter.isExcluded(source, options.exclude)) {
+      Logger.warn(`Skipping excluded file: ${source}`);
+      Logger.debug(`Skipping excluded file: ${source}`);
+      return;
+    }
+
     const force = options.force ?? false;
     let mode = force ? 0 : fs.constants.COPYFILE_EXCL;
     await fs.copyFile(source, destination, mode);
@@ -161,7 +188,7 @@ class FileSystemManager {
   async copyFiles(
     sources: string[],
     destination: string,
-    options: Pick<CopyOptions, 'force'>
+    options: Pick<CopyParams, 'force' | 'exclude'>
   ) {
     await Promise.all(
       sources.map(async (source) => {
@@ -171,18 +198,53 @@ class FileSystemManager {
     );
   }
 
+  private async copyDirectoryRecursiveWithFilter(
+    source: string,
+    destination: string,
+    options: CopyParams
+  ) {
+    const entries = await fs.readdir(source, { withFileTypes: true });
+
+    await this.ensureDir(destination);
+
+    for (const entry of entries) {
+      const srcPath = join(source, entry.name);
+      const destPath = join(destination, entry.name);
+
+      if (options.exclude && PathFilter.isExcluded(srcPath, options.exclude)) {
+        continue;
+      }
+
+      if (entry.isDirectory()) {
+        await this.copyDirectoryRecursiveWithFilter(srcPath, destPath, options);
+      } else if (entry.isFile()) {
+        await this.copyFile(srcPath, destPath, options);
+      }
+    }
+  }
+
   async copyDirectory(
     source: string,
     destination: string,
-    options: CopyOptions
+    options: CopyParams
   ) {
-    await fs.cp(source, destination, options);
+    if (options.exclude && PathFilter.isExcluded(source, options.exclude)) {
+      Logger.warn(`Skipping excluded directory: ${source}`);
+      Logger.debug(`Skipping excluded directory: ${source}`);
+      return;
+    }
+
+    if (options.recursive && options.exclude?.length) {
+      await this.copyDirectoryRecursiveWithFilter(source, destination, options);
+    } else {
+      await fs.cp(source, destination, options);
+    }
   }
 
   async copyDirectories(
     sources: string[],
     destination: string,
-    options: CopyOptions
+    options: CopyParams
   ) {
     await Promise.all(
       sources.map(async (source) => {
@@ -194,7 +256,7 @@ class FileSystemManager {
   async copyFilesFromDirectory(
     source: string,
     destination: string,
-    options: Pick<CopyOptions, 'force'>
+    options: Pick<CopyParams, 'force' | 'exclude'>
   ) {
     let files = await this.getDirectoryFiles(source);
     if (!files || !files.length)
@@ -210,7 +272,7 @@ class FileSystemManager {
   async copyFilesFromDirectories(
     sources: string[],
     destination: string,
-    options: Pick<CopyOptions, 'force'>
+    options: Pick<CopyParams, 'force' | 'exclude'>
   ) {
     await Promise.all(
       sources.map(async (source) => {

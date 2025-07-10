@@ -1,17 +1,12 @@
 import { program } from 'commander';
 import { APP_NAME } from '@shared/constants/app';
 import { buildCreateCommand } from '@application/commands';
-import { buildDependencies } from '@core/dependencies';
-import { DIContainer } from '@infrastructure/container/types';
+import { DIContainer } from '@shared/types/di';
 
 class Application {
-  constructor(private container: DIContainer) {
-    this.container = container;
-  }
+  constructor(private container: DIContainer) {}
 
   async bootstrap() {
-    buildDependencies(this.container);
-
     program
       .name(APP_NAME)
       .description(

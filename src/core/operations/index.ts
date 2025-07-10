@@ -1,4 +1,4 @@
 import CreateTemplateOperation from '@core/operations/create-template-operation';
-import type { Operation, OperationTypes } from '@core/operations/types';
+import type { Operation } from '@core/operations/types';
 
-export { CreateTemplateOperation, Operation, OperationTypes };
+export { CreateTemplateOperation, Operation };

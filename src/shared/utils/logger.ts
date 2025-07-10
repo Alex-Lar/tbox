@@ -45,7 +45,7 @@ Logger.init({
   formatOptions: {
     columns: 80,
     colors: true,
-    compact: true,
+    compact: false,
     date: false,
   },
 });

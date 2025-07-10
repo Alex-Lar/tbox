@@ -1,5 +1,5 @@
-export interface AddOptions {
+export type AddOptions = {
   force: boolean;
   recursive: boolean;
-  exclude: boolean;
-}
+  exclude: string[];
+};

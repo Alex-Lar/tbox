@@ -15,8 +15,7 @@ export class TemplateExistsError extends Error implements PrettyError {
 
   private generateSolution(): string {
     return [
-      `  ${BULLET_SYMBOL} Use --overwrite to replace entire template`,
-      `  ${BULLET_SYMBOL} Use --force to overwrite conflicting files`,
+      `  ${BULLET_SYMBOL} Use --force to overwrite entire template`,
     ].join('\n');
   }
 

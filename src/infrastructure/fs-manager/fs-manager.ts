@@ -15,12 +15,6 @@ class FileSystemManager {
    * @throws {FileSystemOperationError} If an error occurs during copying of file system elements.
    */
   async copyAssets({ destination, dirs = [], files = [], options }: CopyData) {
-    console.log('\n <> FileSystemManager <>');
-    console.log('\ndest:', destination);
-    console.log('dirs:', dirs);
-    console.log('files:', files);
-    console.log('opts:', options);
-    console.log('');
     try {
       const copyOperations = [];
 

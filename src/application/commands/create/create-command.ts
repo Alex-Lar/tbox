@@ -26,19 +26,9 @@ Examples for --exclude option:
     )
     .action(
       async (templateName: string, source: string[], options: AddOptions) => {
-        console.log('Starting to resolve operation...');
-
         const operation = container.resolve<CreateTemplateOperation>(
           'CreateTemplateOperation'
         );
-
-        console.log(operation);
-        console.log('Operation is resolved!');
-
-        console.log('\n<> BuildCreateCommand <>');
-        console.log('\nname:', templateName);
-        console.log('sources:', source);
-        console.log('exclude:', options.exclude, '\n');
 
         await operation.execute({
           templateName,

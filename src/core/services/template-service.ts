@@ -41,7 +41,6 @@ export default class TemplateService {
       );
     }
 
-    // Copy files into storage
     await this.repository.create(
       {
         name: validatedName,

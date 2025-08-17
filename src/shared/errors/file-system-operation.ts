@@ -1,10 +1,10 @@
+import { PrettyError } from '@shared/types/error';
 import {
   BULLET_SYMBOL,
   ANGLE_QUOTE_SYMBOL,
   INFO_SYMBOL,
   ERROR_SYMBOL,
 } from '../constants/symbols';
-import { PrettyError } from '../types';
 
 export class FileSystemOperationError extends Error implements PrettyError {
   static readonly OPERATIONS = {

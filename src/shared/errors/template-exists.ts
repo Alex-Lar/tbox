@@ -1,5 +1,5 @@
+import { PrettyError } from '@shared/types/error';
 import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols';
-import { PrettyError } from '../types';
 
 export class TemplateExistsError extends Error implements PrettyError {
   readonly solution: string;
@@ -14,9 +14,9 @@ export class TemplateExistsError extends Error implements PrettyError {
   }
 
   private generateSolution(): string {
-    return [
-      `  ${BULLET_SYMBOL} Use --force to overwrite entire template`,
-    ].join('\n');
+    return [`  ${BULLET_SYMBOL} Use --force to overwrite entire template`].join(
+      '\n'
+    );
   }
 
   formatForDisplay(): string {

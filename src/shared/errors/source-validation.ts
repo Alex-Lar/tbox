@@ -1,10 +1,11 @@
-import { InvalidPathsCollection, PrettyError } from '../types';
+import { PrettyError } from '@shared/types/error';
 import {
   ANGLE_QUOTE_SYMBOL,
   BULLET_SYMBOL,
   ERROR_SYMBOL,
   INFO_SYMBOL,
 } from '../constants/symbols';
+import { InvalidPathsCollection } from '@shared/types/file-system';
 
 export class SourceValidationError extends Error implements PrettyError {
   readonly invalidPaths: InvalidPathsCollection;

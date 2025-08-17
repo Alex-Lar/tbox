@@ -1,53 +1,62 @@
-import { CreateTemplateOperation } from '@core/operations';
-import TemplateRepository from '@core/repository';
-import { TemplateService } from '@core/services';
-import { FileSystemValidator, NamingValidator } from '@core/validators';
-import FileSystemManager from '@infrastructure/fs-manager';
-import { getAppPaths } from '@infrastructure/paths';
-import { APP_NAME } from '@shared/constants';
+import FileSystemEntryFactory from '@core/file-system/entries/fs-entry-factory';
+import FileSystemScanner from '@core/file-system/scanners/fs-scanner';
+import TemplateEntryFactory from '@core/template/entities/template-entry-factory';
+import TemplateFactory from '@core/template/entities/template-factory';
+import CreateTemplateOperation from '@core/template/operations/create-template-operation';
+import TemplateRepository from '@core/template/repositories';
+import TemplateService from '@core/template/services';
 import { DIContainer } from '@shared/types/di';
-import { container } from 'tsyringe';
+import tsrynge from 'tsyringe';
 
 export default class TsyringeContainer {
-  private container: DIContainer;
+  private _container: DIContainer;
 
   constructor() {
-    this.container = container.createChildContainer();
-    this.configureDependencies();
+    this._container = tsrynge.container.createChildContainer();
+    this.configureContainer();
   }
 
-  private configureDependencies(): void {
-    // Infrastracture
-    this.container.registerSingleton(FileSystemManager);
-    this.container.registerInstance(
-      'STORAGE_TOKEN',
-      getAppPaths(APP_NAME).data
-    );
+  configureContainer(): void {
+    this.configureCoreFileSystem();
+    this.configureCoreTemplate();
+  }
 
-    // Operations
-    this.container.register('CreateTemplateOperation', {
+  configureCoreFileSystem() {
+    this._container.registerSingleton(FileSystemEntryFactory);
+
+    this._container.register('FileSystemScanner', {
+      useClass: FileSystemScanner,
+    });
+  }
+
+  configureCoreTemplate() {
+    this._container.register('CreateTemplateOperation', {
       useClass: CreateTemplateOperation,
     });
 
-    // Repository
-    this.container.register('TemplateRepository', {
+    this._container.register('TemplateRepository', {
       useClass: TemplateRepository,
     });
 
-    // Services
-    this.container.register('TemplateService', {
+    this._container.register('TemplateService', {
       useClass: TemplateService,
     });
 
-    // Validators
-    this.container.register('FileSystemValidator', {
-      useClass: FileSystemValidator,
+    this._container.register('TemplateEntryFactory', {
+      useClass: TemplateEntryFactory,
     });
 
-    this.container.register('NamingValidator', { useClass: NamingValidator });
+    this._container.register('TemplateFactory', {
+      useClass: TemplateFactory,
+    });
   }
 
-  getContainer(): DIContainer {
-    return this.container;
+  get container(): DIContainer {
+    return this._container;
   }
 }
+
+const tsryngeContainer = new TsyringeContainer();
+const container = tsryngeContainer.container;
+
+export { container };

@@ -1,4 +1,4 @@
-import { isPrettyError } from '@shared/guards/pretty-error';
+import { isPrettyError } from '@shared/guards';
 import Logger from '@shared/utils/logger';
 
 export const handleError = (err: unknown): void => {

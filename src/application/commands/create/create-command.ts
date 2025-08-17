@@ -1,9 +1,9 @@
 import { Command } from 'commander';
 import { AddOptions } from '@application/commands/create';
-import { CreateTemplateOperation } from '@core/operations';
-import { DIContainer } from '@shared/types/di';
+import { container } from '@infrastructure/container/di-container';
+import CreateTemplateOperation from '@core/template/operations/create-template-operation';
 
-export default function buildCreateCommand(container: DIContainer) {
+export default function buildCreateCommand() {
   return new Command('create')
     .argument('<template-name>', 'unique template name')
     .argument('<source...>', 'source to save as template')
@@ -12,7 +12,7 @@ export default function buildCreateCommand(container: DIContainer) {
     .option(
       '-x, --exclude <patterns>',
       'Exclude files/directories (comma-separated)',
-      (value) => value.split(',').map((p) => p.trim()),
+      value => value.split(',').map(p => p.trim()),
       []
     )
     .addHelpText(
@@ -24,17 +24,13 @@ Examples for --exclude option:
   ./config.json   - exclude only the root config.json file
 `
     )
-    .action(
-      async (templateName: string, source: string[], options: AddOptions) => {
-        const operation = container.resolve<CreateTemplateOperation>(
-          'CreateTemplateOperation'
-        );
+    .action(async (templateName: string, source: string[], options: AddOptions) => {
+      const operation = container.resolve<CreateTemplateOperation>('CreateTemplateOperation');
 
-        await operation.execute({
-          templateName,
-          source,
-          options,
-        });
-      }
-    );
+      await operation.execute({
+        templateName,
+        source,
+        options,
+      });
+    });
 }

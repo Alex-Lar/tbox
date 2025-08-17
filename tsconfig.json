@@ -46,19 +46,16 @@
       ],
       "@shared/*": [
         "src/shared/*"
-      ],
-      "@tests/*": [
-        "tests/*"
       ]
     }
   },
   "include": [
-    "src",
-    "tests"
+    "src"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "example",
+    "**/*.test.ts"
   ]
 }

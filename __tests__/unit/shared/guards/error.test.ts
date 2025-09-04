@@ -1,19 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
-import { isPrettyError } from '../error';
-import { PrettyError } from '@shared/types/error';
-
-const createPrettyErrorMock = (): PrettyError => ({
-  formatForDisplay: vi.fn().mockReturnValue('formatted message'),
-});
-
-const createInvalidPrettyErrorMock = () => ({
-  formatForDisplay: 'invalid pretty error',
-});
+import { describe, expect, it } from 'vitest';
+import { isPrettyError } from '@shared/guards';
+import { mockInvalidPrettyError, mockPrettyError } from '__tests__/helpers';
 
 describe('Error Guards', () => {
   describe('isPrettyError()', () => {
     it('returns true for objects with formatForDisplay method', () => {
-      const obj = createPrettyErrorMock();
+      const obj = mockPrettyError();
 
       const result = isPrettyError(obj);
 
@@ -25,7 +17,7 @@ describe('Error Guards', () => {
       const obj2 = new TypeError();
       const obj3 = new SyntaxError();
       const obj4 = {};
-      const obj5 = createInvalidPrettyErrorMock();
+      const obj5 = mockInvalidPrettyError();
 
       const r1 = isPrettyError(obj1);
       const r2 = isPrettyError(obj2);
@@ -41,14 +33,7 @@ describe('Error Guards', () => {
     });
 
     it('returns false for primitives', () => {
-      const primitives = [
-        'string',
-        10,
-        true,
-        Symbol('symbol'),
-        null,
-        undefined,
-      ];
+      const primitives = ['string', 10, true, Symbol('symbol'), null, undefined];
 
       for (let value of primitives) {
         expect(isPrettyError(value)).toBe(false);

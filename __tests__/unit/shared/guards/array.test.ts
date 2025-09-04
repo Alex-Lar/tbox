@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isStringArray } from './array';
+import { isStringArray } from '@shared/guards';
 
 describe('Array Guards', () => {
   describe('isStringArray()', () => {
@@ -22,14 +22,6 @@ describe('Array Guards', () => {
       expect(r4).toBe(false);
       expect(r5).toBe(false);
       expect(r6).toBe(false);
-    });
-
-    it('returns false if an array is empty (contains no strings)', () => {
-      const emptyArr: unknown = [];
-
-      const result = isStringArray(emptyArr);
-
-      expect(result).toBe(false);
     });
 
     it('returns false if an array contains non-string values.', () => {

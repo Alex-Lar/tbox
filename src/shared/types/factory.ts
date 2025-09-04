@@ -1,3 +1,3 @@
 export interface Factory<T, K = void> {
-  create(props: K): T;
+    create(props: K): T;
 }

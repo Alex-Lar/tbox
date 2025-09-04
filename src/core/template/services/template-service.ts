@@ -1,47 +1,46 @@
 import { inject, injectable } from 'tsyringe';
-import TemplateRepository from '@core/template/repositories/template-repository';
-import TemplateFactory from '@core/template/entities/template-factory';
-import type { CreateTemplateProps } from '@core/template/operations/types';
-import FileSystemScanner from '@core/file-system/scanners/fs-scanner';
-import TemplateEntryFactory from '../entities/template-entry-factory';
-import { getAppPaths } from '@infrastructure/file-system/paths';
-import { APP_NAME } from '@shared/constants';
+
+import TemplateRepository from '@core/template/repositories/template-repository.ts';
+import TemplateFactory from '@core/template/entities/template-factory.ts';
+import type { CreateTemplateProps } from '@core/template/operations/types.ts';
+import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
+
+import FileSystemScanner from '@core/file-system/services/fs-scanner';
+
+import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 
 @injectable()
 export default class TemplateService {
-  constructor(
-    @inject('TemplateRepository')
-    private templateRepository: TemplateRepository,
-    @inject('FileSystemScanner')
-    private fileSystemScanner: FileSystemScanner,
-    @inject('TemplateFactory')
-    private templateFactory: TemplateFactory,
-    @inject('TemplateEntryFactory')
-    private templateEntryFactory: TemplateEntryFactory
-  ) {}
+    constructor(
+        @inject('FileSystemScanner')
+        private fileSystemScanner: FileSystemScanner,
+        @inject('TemplateRepository')
+        private templateRepository: TemplateRepository,
+        @inject('TemplateFactory')
+        private templateFactory: TemplateFactory,
+        @inject('TemplateEntryFactory')
+        private templateEntryFactory: TemplateEntryFactory
+    ) {}
 
-  async create({ templateName, source, options }: CreateTemplateProps) {
-    // scan
-    const fileSystemEntries = await this.fileSystemScanner.scan(source, {
-      exclude: options.exclude,
-      recursive: options.recursive,
-    });
+    async create({ templateName, source, options }: CreateTemplateProps) {
+        const fileSystemEntries = await this.fileSystemScanner.scan(source, {
+            exclude: options.exclude,
+            recursive: options.recursive,
+        });
 
-    // transform
-    const templateEntries = this.templateEntryFactory.createMany({
-      entries: fileSystemEntries,
-      sourcePatterns: source,
-      templateName,
-    });
+        const templateEntries = this.templateEntryFactory.createMany({
+            entries: fileSystemEntries,
+            source,
+            templateName,
+            options,
+        });
 
-    // aggregate
-    const template = this.templateFactory.create({
-      entries: templateEntries,
-      path: getAppPaths(APP_NAME).data,
-      name: templateName,
-    });
+        const template = this.templateFactory.create({
+            entries: templateEntries,
+            path: getStoragePath(),
+            name: templateName,
+        });
 
-    // create 
-    await this.templateRepository.create(template, options);
-  }
+        await this.templateRepository.create(template, options);
+    }
 }

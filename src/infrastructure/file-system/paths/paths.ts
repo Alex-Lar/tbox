@@ -1,25 +1,25 @@
-import nodeOs from 'os';
-import { PlatformPaths } from './types';
-import { getUnixPaths } from './unix-paths';
-import { isDarwin, isLinux } from '@shared/utils/platform';
+import { platform } from 'os';
+import { PlatformPaths } from './types.ts';
+import { getUnixPaths } from './unix-paths.ts';
+import { isDarwin, isLinux } from '@shared/utils/platform.ts';
 
 const PATHS_CACHE = new Map<string, PlatformPaths>();
 
 export default function getAppPaths(appName: string): PlatformPaths {
-  const currentPlatform = nodeOs.platform();
+    const currentPlatform = platform();
 
-  if (PATHS_CACHE.has(currentPlatform)) {
-    return PATHS_CACHE.get(currentPlatform)!;
-  }
+    if (PATHS_CACHE.has(currentPlatform)) {
+        return PATHS_CACHE.get(currentPlatform)!;
+    }
 
-  let paths: PlatformPaths | null = null;
-  if (isLinux() || isDarwin()) {
-    paths = getUnixPaths(appName);
-  }
+    let paths: PlatformPaths | null = null;
+    if (isLinux() || isDarwin()) {
+        paths = getUnixPaths(appName);
+    }
 
-  if (paths === null) throw new Error(`Unsupported platform: '${currentPlatform}'`);
+    if (paths === null) throw new Error(`Unsupported platform: '${currentPlatform}'`);
 
-  PATHS_CACHE.set(currentPlatform, paths);
+    PATHS_CACHE.set(currentPlatform, paths);
 
-  return paths;
+    return paths;
 }

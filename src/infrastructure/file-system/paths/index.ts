@@ -1,3 +1,3 @@
-import getAppPaths from "./paths";
+import getAppPaths from './paths.js';
 
 export { getAppPaths };

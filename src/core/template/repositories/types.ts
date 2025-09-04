@@ -1,6 +1,6 @@
-import { AddOptions } from '@application/commands/create';
-import Template from '../entities/template';
+import { AddOptions } from '@application/commands/create/index.ts';
+import Template from '../entities/template.ts';
 
 export interface TemplateRepositoryInterface {
-  create(template: Template, options: AddOptions): Promise<void>;
+    create(template: Template, options: AddOptions): Promise<void>;
 }

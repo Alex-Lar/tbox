@@ -1,93 +1,48 @@
-import { Factory } from '@shared/types/factory';
-import TemplateEntry from './template-entry';
-import { FileSystemEntry } from '@core/file-system/entries';
-import { join, normalize, relative, resolve } from '@shared/utils/path';
-import { getParentPathFromGlobString } from '@shared/utils/glob';
-import { matchGlob } from '@shared/utils/pattern-matcher';
-import { getAppPaths } from '@infrastructure/file-system/paths';
-import { APP_NAME } from '@shared/constants';
 import { injectable } from 'tsyringe';
+import TemplateEntry from '@core/template/entities/template-entry.ts';
+
+import type { Factory } from '@shared/types/factory.ts';
+import DestinationResolver from '../services/destination-resolver';
+import { FileSystemEntry } from '@core/file-system/entities';
+import { AddOptions } from '@application/commands/create';
 
 interface TemplateEntryProps {
-  entry: FileSystemEntry;
-  destination: string;
+    entry: FileSystemEntry;
+    destination: string;
 }
-
-/**
- * Normalized representation of source path/pattern
- * @property concretePath - Absolute physical path (without glob patterns)
- * @property pattern - Original pattern in normalized absolute form
- */
-type ResolvedSourcePattern = {
-  concretePath: string;
-  pattern: string;
-};
 
 @injectable()
 export default class TemplateEntryFactory implements Factory<TemplateEntry, TemplateEntryProps> {
-  create({ entry, destination }: TemplateEntryProps): TemplateEntry {
-    return new TemplateEntry(entry, destination);
-  }
-
-  createMany({
-    entries,
-    sourcePatterns,
-    templateName,
-  }: {
-    entries: FileSystemEntry[];
-    sourcePatterns: string[];
-    templateName: string;
-  }): TemplateEntry[] {
-    const resolvedSourcePatterns = this.resolveAndSortSourcePatterns(sourcePatterns);
-
-    const templateEntries: TemplateEntry[] = [];
-
-    for (const entry of entries) {
-      if (!entry.name) continue;
-
-      for (const { concretePath, pattern } of resolvedSourcePatterns) {
-        if (!entry.path.startsWith(concretePath)) continue;
-
-        if (matchGlob(entry.path, pattern)) {
-          const destination = this.getDestinationPath(entry.path, concretePath, templateName);
-
-          templateEntries.push(this.create({ entry, destination }));
-
-          break;
-        }
-      }
+    create({ entry, destination }: TemplateEntryProps): TemplateEntry {
+        return new TemplateEntry(entry, destination);
     }
 
-    return templateEntries;
-  }
+    createMany({
+        entries,
+        source,
+        templateName,
+        options,
+    }: {
+        entries: FileSystemEntry[];
+        source: string[];
+        templateName: string;
+        options: Pick<AddOptions, 'base'>;
+    }): TemplateEntry[] {
+        const destResolver = new DestinationResolver(source);
+        const templateEntries: TemplateEntry[] = [];
 
-  private getDestinationPath(
-    entryPath: string,
-    concretePath: string,
-    templateName: string
-  ): string {
-    const storageRoot = join(getAppPaths(APP_NAME).data, templateName);
-    const relativePath = relative(concretePath, entryPath);
-    return resolve(storageRoot, relativePath);
-  }
+        for (const entry of entries) {
+            if (!entry.name) continue;
 
-  private resolveAndSortSourcePatterns(sourcePatterns: string[]): ResolvedSourcePattern[] {
-    const currentDir = process.cwd();
+            const destination = destResolver.resolve({
+                targetPath: entry.path,
+                basePath: templateName,
+                includeSourceBase: options.base,
+            });
 
-    return (
-      sourcePatterns
-        .map(path => {
-          const normalized = normalize(path);
-          const parentPath = getParentPathFromGlobString(normalized);
-          const concretePath = resolve(currentDir, parentPath);
+            templateEntries.push(this.create({ entry, destination }));
+        }
 
-          return {
-            concretePath,
-            pattern: resolve(currentDir, path),
-          };
-        })
-        // Paths should be sorted in descending order so that the more specific ones are at the top
-        .sort((a, b) => b.concretePath.length - a.concretePath.length)
-    );
-  }
+        return templateEntries;
+    }
 }

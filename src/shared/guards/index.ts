@@ -1,10 +1,5 @@
-import { isStringArray, isNonEmptyStringArray } from './array';
-import { isNonEmptyStringSet } from './set';
-import { isPrettyError } from './error';
+import { isStringArray, isNonEmptyStringArray } from './array.ts';
+import { isNonEmptyStringSet } from './set.ts';
+import { isPrettyError } from './error.ts';
 
-export {
-  isStringArray,
-  isPrettyError,
-  isNonEmptyStringArray,
-  isNonEmptyStringSet,
-};
+export { isStringArray, isPrettyError, isNonEmptyStringArray, isNonEmptyStringSet };

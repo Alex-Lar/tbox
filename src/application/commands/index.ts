@@ -1,3 +1,3 @@
-import buildCreateCommand from './create';
+import buildCreateCommand from './create/create-command.ts';
 
 export { buildCreateCommand };

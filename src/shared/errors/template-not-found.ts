@@ -1,5 +1,5 @@
-import { PrettyError } from '@shared/types/error';
-import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols';
+import { PrettyError } from '@shared/types/error.ts';
+import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols.ts';
 
 export class TemplateNotFoundError extends Error implements PrettyError {
   readonly solution: string;

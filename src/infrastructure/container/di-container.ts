@@ -1,62 +1,68 @@
-import FileSystemEntryFactory from '@core/file-system/entries/fs-entry-factory';
-import FileSystemScanner from '@core/file-system/scanners/fs-scanner';
-import TemplateEntryFactory from '@core/template/entities/template-entry-factory';
-import TemplateFactory from '@core/template/entities/template-factory';
-import CreateTemplateOperation from '@core/template/operations/create-template-operation';
-import TemplateRepository from '@core/template/repositories';
-import TemplateService from '@core/template/services';
-import { DIContainer } from '@shared/types/di';
-import tsrynge from 'tsyringe';
+import { container as tsryngeContainerInstance } from 'tsyringe';
 
-export default class TsyringeContainer {
-  private _container: DIContainer;
+import FileSystemEntryFactory from '@core/file-system/entities/fs-entry-factory.ts';
+import FileSystemScanner from '@core/file-system/services/fs-scanner';
+import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
+import TemplateFactory from '@core/template/entities/template-factory.ts';
+import CreateTemplateOperation from '@core/template/operations/create-template-operation.ts';
+import TemplateRepository from '@core/template/repositories/index.ts';
+import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
+import TemplateService from '@core/template/services/index.ts';
 
-  constructor() {
-    this._container = tsrynge.container.createChildContainer();
-    this.configureContainer();
-  }
+import type { DIContainer } from '@shared/types/di.ts';
 
-  configureContainer(): void {
-    this.configureCoreFileSystem();
-    this.configureCoreTemplate();
-  }
+class TsyringeContainer {
+    private _container: DIContainer;
 
-  configureCoreFileSystem() {
-    this._container.registerSingleton(FileSystemEntryFactory);
+    constructor() {
+        this._container = tsryngeContainerInstance.createChildContainer();
+        this.initContainer();
+    }
 
-    this._container.register('FileSystemScanner', {
-      useClass: FileSystemScanner,
-    });
-  }
+    initContainer(): void {
+        this.initCoreFileSystem();
+        this.initCoreTemplate();
+    }
 
-  configureCoreTemplate() {
-    this._container.register('CreateTemplateOperation', {
-      useClass: CreateTemplateOperation,
-    });
+    initCoreFileSystem() {
+        this._container.register('FileSystemEntryFactory', {
+            useClass: FileSystemEntryFactory,
+        });
 
-    this._container.register('TemplateRepository', {
-      useClass: TemplateRepository,
-    });
+        this._container.register('FileSystemScanner', {
+            useClass: FileSystemScanner,
+        });
+    }
 
-    this._container.register('TemplateService', {
-      useClass: TemplateService,
-    });
+    initCoreTemplate() {
+        this._container.registerSingleton(CreateTemplateSchema);
 
-    this._container.register('TemplateEntryFactory', {
-      useClass: TemplateEntryFactory,
-    });
+        this._container.register('CreateTemplateOperation', {
+            useClass: CreateTemplateOperation,
+        });
 
-    this._container.register('TemplateFactory', {
-      useClass: TemplateFactory,
-    });
-  }
+        this._container.register('TemplateService', {
+            useClass: TemplateService,
+        });
 
-  get container(): DIContainer {
-    return this._container;
-  }
+        this._container.register('TemplateRepository', {
+            useClass: TemplateRepository,
+        });
+
+        this._container.register('TemplateEntryFactory', {
+            useClass: TemplateEntryFactory,
+        });
+
+        this._container.register('TemplateFactory', {
+            useClass: TemplateFactory,
+        });
+    }
+
+    get container(): DIContainer {
+        return this._container;
+    }
 }
 
-const tsryngeContainer = new TsyringeContainer();
-const container = tsryngeContainer.container;
+const container = new TsyringeContainer().container;
 
-export { container };
+export default container;

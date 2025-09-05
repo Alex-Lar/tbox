@@ -3,6 +3,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     test: {
+        typecheck: {
+            tsconfig: './tsconfig.vitest.json',
+        },
+        include: ['**/*.{test,int.test}.{js,ts}'],
         globals: true,
         environment: 'node',
         coverage: {
@@ -12,7 +16,11 @@ export default defineConfig({
     resolve: {
         alias: {
             '@src': path.resolve(__dirname, './src'),
-            '@tests': path.resolve(__dirname, './tests'),
+            '@application': path.resolve(__dirname, './src/application'),
+            '@core': path.resolve(__dirname, './src/core'),
+            '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
+            '@shared': path.resolve(__dirname, './src/shared'),
+            __tests__: path.resolve(__dirname, './__tests__'),
         },
     },
 });

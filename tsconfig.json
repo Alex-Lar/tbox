@@ -1,64 +1,57 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "commonjs",
-    "lib": [
-      "ESNext"
-    ],
-    "baseUrl": ".",
-    "outDir": "dist",
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": false,
-    "importHelpers": true,
-    "removeComments": true,
-    "moduleResolution": "node",
-    "isolatedModules": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "exactOptionalPropertyTypes": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "paths": {
-      "@application/*": [
-        "src/application/*"
-      ],
-      "@core/*": [
-        "src/core/*"
-      ],
-      "@infrastructure/*": [
-        "src/infrastructure/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@tests/*": [
-        "tests/*"
-      ]
-    }
-  },
-  "include": [
-    "src",
-    "tests"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "example",
-  ]
+	"compilerOptions": {
+		"target": "es2022",
+		"module": "esnext",
+		"lib": [
+			"ES2022"
+		],
+		"types": [
+			"node"
+		],
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"baseUrl": "./",
+		"outDir": "dist",
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": false,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": false,
+		"importHelpers": true,
+		"removeComments": true,
+		"isolatedModules": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"exactOptionalPropertyTypes": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"paths": {
+			"@application/*": [
+				"src/application/*"
+			],
+			"@core/*": [
+				"src/core/*"
+			],
+			"@infrastructure/*": [
+				"src/infrastructure/*"
+			],
+			"@shared/*": [
+				"src/shared/*"
+			]
+		}
+	},
 }

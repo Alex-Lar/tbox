@@ -1,3 +1,3 @@
-export * from '@shared/constants/app';
-export * from '@shared/constants/platforms';
-export * from '@shared/constants/symbols';
+export * from '@shared/constants/app.ts';
+export * from '@shared/constants/platforms.ts';
+export * from '@shared/constants/symbols.ts';

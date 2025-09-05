@@ -1,25 +1,23 @@
-import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols';
-import { PrettyError } from '../types';
+import { PrettyError } from '@shared/types/error.ts';
+import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols.ts';
 
-export class TemplateExistsError extends Error implements PrettyError {
-  readonly solution: string;
-  readonly templateName: string;
+export default class TemplateExistsError extends Error implements PrettyError {
+    readonly solution: string;
+    readonly templateName: string;
 
-  constructor(templateName: string) {
-    super(`Template already exists: '${templateName}'`);
+    constructor(templateName: string) {
+        super(`Template already exists: '${templateName}'`);
 
-    this.name = 'TemplateExistsError';
-    this.templateName = templateName;
-    this.solution = this.generateSolution();
-  }
+        this.name = 'TemplateExistsError';
+        this.templateName = templateName;
+        this.solution = this.generateSolution();
+    }
 
-  private generateSolution(): string {
-    return [
-      `  ${BULLET_SYMBOL} Use --force to overwrite entire template`,
-    ].join('\n');
-  }
+    private generateSolution(): string {
+        return [`  ${BULLET_SYMBOL} Use --force to overwrite entire template`].join('\n');
+    }
 
-  formatForDisplay(): string {
-    return `${this.message}\n\n${INFO_SYMBOL} Solution:\n${this.solution}`;
-  }
+    formatForDisplay(): string {
+        return `${this.message}\n\n${INFO_SYMBOL} Solution:\n${this.solution}`;
+    }
 }

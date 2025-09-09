@@ -1,31 +1,15 @@
 import { matchGlob } from '@shared/utils/pattern-matcher';
 import { join, normalize, parse, relative, resolve } from '@shared/utils/path';
-import { getStoragePath } from '@infrastructure/file-system/paths/get-path';
 import { getParentPathFromGlobString } from '@shared/utils/glob';
-
-/**
- * Normalized representation of source path/pattern
- * @property parentPath - Absolute physical path (without glob patterns)
- * @property originalGlob - Original pattern in normalized absolute form
- */
-type ResolvedSourcePattern = {
-    parentPath: string;
-    originalGlob: string;
-};
-
-type ResolveOptions = {
-    targetPath: string;
-    basePath: string;
-    includeSourceBase?: boolean;
-};
+import { ResolvedSourcePattern, ResolveOptions } from './types';
 
 export default class DestinationResolver {
     private resolvedSourcePatterns: ResolvedSourcePattern[] = [];
     private destinationRoot: string;
 
-    constructor(source: string[], destinationRoot?: string) {
+    constructor(source: string[], destinationRoot: string) {
         this.resolvedSourcePatterns = this.resolveAndSortSourcePatterns(source);
-        this.destinationRoot = destinationRoot ?? getStoragePath();
+        this.destinationRoot = destinationRoot;
     }
 
     /**
@@ -41,8 +25,8 @@ export default class DestinationResolver {
      *
      * @example
      * // Given:
-     * // - destinationRoot: '/var/storage'
      * // - source: ['/projects/*.ts', '/projects/utils/**']
+     * // - destinationRoot: '/var/storage'
      *
      * // Without source base:
      * resolve({
@@ -60,7 +44,7 @@ export default class DestinationResolver {
      * })
      * // -> '/var/storage/backup/utils/helpers.ts'
      */
-    resolve({ targetPath, basePath, includeSourceBase = false }: ResolveOptions): string {
+    resolve({ targetPath, basePath = '.', includeSourceBase = false }: ResolveOptions): string {
         for (const { parentPath, originalGlob } of this.resolvedSourcePatterns) {
             if (!targetPath.startsWith(parentPath)) continue;
 
@@ -86,20 +70,16 @@ export default class DestinationResolver {
     }
 
     private resolveAndSortSourcePatterns(patterns: string[]): ResolvedSourcePattern[] {
-        const currentDir = process.cwd();
-
         return (
             patterns
                 .map(pattern => {
                     const normalizedPattern = normalize(pattern);
-                    const parentPath = resolve(
-                        currentDir,
-                        getParentPathFromGlobString(normalizedPattern)
-                    );
+                    const parentPath = resolve(getParentPathFromGlobString(normalizedPattern));
+                    const originalGlob = resolve(normalizedPattern);
 
                     return {
                         parentPath,
-                        originalGlob: resolve(currentDir, normalizedPattern),
+                        originalGlob,
                     } as ResolvedSourcePattern;
                 })
                 // Paths should be sorted in descending order so that the more specific ones are at the top
@@ -107,3 +87,20 @@ export default class DestinationResolver {
         );
     }
 }
+
+// GET
+// > DestinationResolver
+// 		> targetPath: /root/.local/share/tb/test-template/index.html
+// 		> basePath: test-template
+// 		> includeSourceBase: false
+// 		> finalBasePath: test-template
+
+// CREATE
+// > DestinationResolver
+//  	> DestinationResolver
+//     	> targetPath: /home/project/assets/css/styles.css
+//     	> basePath: test-template
+//     	> includeSourceBase: false
+//     	> finalBasePath: test-template
+// -
+//   	> Single destination result: /root/.local/share/tb/test-template/assets/css/styles.css

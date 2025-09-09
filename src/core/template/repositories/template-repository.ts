@@ -7,7 +7,7 @@ import TemplateExistsError from '@shared/errors/template-exists.ts';
 import { generateTempDirName } from '@shared/utils/random.ts';
 import Transaction, { TransactionHandler } from '@shared/patterns/transaction.ts';
 import { existsSync, remove, rename } from '@shared/utils/file-system.ts';
-import { join } from '@shared/utils/path.ts';
+import Logger from '@shared/utils/logger.ts';
 
 @injectable()
 export default class TemplateRepository implements TemplateRepositoryInterface {
@@ -15,39 +15,55 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
      * @throws {TemplateExistsError} if the force flag is false and the template already exists.
      */
     async create(template: Template, options: AddOptions): Promise<void> {
-        const storageRoot = template.path;
-        const templatePath = join(storageRoot, template.name);
-
-        const templateAlreadyExists = existsSync(templatePath);
+        const templateStorage = template.destination;
+        const templateAlreadyExists = existsSync(templateStorage);
 
         if (templateAlreadyExists && !options.force) {
             throw new TemplateExistsError(template.name);
         }
 
-        let commit: TransactionHandler = null;
-        let rollback: TransactionHandler = null;
-
         const execute = async () => {
             await TemplateCopier.copyTemplate(template, options.force);
         };
 
+        let rollback: TransactionHandler = null;
+        let commit: TransactionHandler = null;
+
         if (templateAlreadyExists && options.force) {
             const oldTemplateTemporaryDirname = generateTempDirName();
-            await rename(storageRoot, oldTemplateTemporaryDirname);
+            await rename(templateStorage, oldTemplateTemporaryDirname);
 
+            rollback = async () => {
+                await remove(templateStorage);
+                await rename(oldTemplateTemporaryDirname, templateStorage);
+            };
             commit = async () => {
                 await remove(oldTemplateTemporaryDirname);
             };
-            rollback = async () => {
-                await remove(storageRoot);
-                await rename(oldTemplateTemporaryDirname, storageRoot);
-            };
         } else {
             rollback = async () => {
-                await remove(storageRoot);
+                await remove(templateStorage);
             };
         }
 
-        await new Transaction({ execute, commit, rollback }).run();
+        await new Transaction({ execute, rollback, commit }).run();
+    }
+
+    async extract(template: Template): Promise<void> {
+        const execute = async () => {
+            await TemplateCopier.copyTemplate(template);
+        };
+
+        const rollback = async () => {
+            await remove(template.destination);
+        };
+
+        const commit = async () => {
+            Logger.success(
+                `Template '${template.name}' successfully copied to: ${template.destination}`
+            );
+        };
+
+        await new Transaction({ execute, rollback, commit }).run();
     }
 }

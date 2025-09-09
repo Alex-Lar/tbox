@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import CreateTemplateOperation from '@core/template/operations/create-template-operation';
 import { beforeEach, describe, expect, vi, it } from 'vitest';
 import container from '@infrastructure/container/di-container';
-import { simpleProjectStructureFixture } from '__tests__/fixtures/simple-project-structure';
+import { getSimpleStructureFixture } from '__tests__/fixtures/simple-structure';
 import FastGlob from 'fast-glob';
 import { getFastGlobStreamMock } from '__tests__/helpers';
 import { fs, vol } from 'memfs';
@@ -37,23 +37,26 @@ describe('CreateTemplateOperation Integration Suite', () => {
     });
 
     describe('Simple structure', () => {
-        const storagePath = '/home/.local/share/tb';
-        const { globEntries, cwd, json, forSearch } = simpleProjectStructureFixture;
+        const templateName = 'test-template';
+        const fixture = getSimpleStructureFixture({ isTemplate: false, templateName });
+        const storagePath = fixture.storagePath;
 
         beforeEach(() => {
             vol.reset();
-            vol.fromJSON(json, cwd);
-            fs.mkdirSync('/home/.local/share/', { recursive: true });
+            vol.fromJSON(fixture.memfsStructure, fixture.memfsCwd);
+            fs.mkdirSync('/home/.local/share', { recursive: true });
 
             vi.mocked(getStoragePath).mockImplementation(() => storagePath);
-            vi.mocked(FastGlob.stream).mockImplementation(getFastGlobStreamMock(globEntries));
+            vi.mocked(FastGlob.stream).mockImplementation(
+                getFastGlobStreamMock(fixture.globEntries)
+            );
 
-            vi.spyOn(process, 'cwd').mockReturnValue(cwd);
+            vi.spyOn(process, 'cwd').mockReturnValue(fixture.memfsCwd);
         });
 
         it('should create new template without base directory', async () => {
             const input = {
-                templateName: 'new-template',
+                templateName,
                 source: ['./project/**'],
                 options: {
                     base: false,
@@ -67,14 +70,15 @@ describe('CreateTemplateOperation Integration Suite', () => {
 
             expect(fs.existsSync(resolve(storagePath, input.templateName))).toBe(true);
             expect(fs.existsSync(resolve(storagePath, input.templateName, 'project'))).toBe(false);
-            forSearch.forEach(path => {
+
+            fixture.expectedRelativePaths.forEach(path => {
                 expect(fs.existsSync(resolve(storagePath, input.templateName, path))).toBe(true);
             });
         });
 
         it('should create new template with base directory', async () => {
             const input = {
-                templateName: 'new-template',
+                templateName,
                 source: ['./project/**'],
                 options: {
                     base: true,
@@ -88,7 +92,8 @@ describe('CreateTemplateOperation Integration Suite', () => {
 
             expect(fs.existsSync(resolve(storagePath, input.templateName))).toBe(true);
             expect(fs.existsSync(resolve(storagePath, input.templateName, 'project'))).toBe(true);
-            forSearch.forEach(path => {
+
+            fixture.expectedRelativePaths.forEach(path => {
                 const entry = resolve(storagePath, input.templateName, 'project', path);
                 expect(fs.existsSync(entry)).toBe(true);
             });
@@ -96,7 +101,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
 
         it('should create new template with recursive set to true', async () => {
             const input = {
-                templateName: 'new-template',
+                templateName,
                 source: ['./project'],
                 options: {
                     base: false,
@@ -110,24 +115,24 @@ describe('CreateTemplateOperation Integration Suite', () => {
 
             expect(fs.existsSync(resolve(storagePath, input.templateName))).toBe(true);
             expect(fs.existsSync(resolve(storagePath, input.templateName, 'project'))).toBe(false);
-            forSearch.forEach(path => {
+
+            fixture.expectedRelativePaths.forEach(path => {
                 const entry = resolve(storagePath, input.templateName, path);
                 expect(fs.existsSync(entry)).toBe(true);
             });
         });
 
         it('should overwrite old template with force set to true', async () => {
-            const oldTemplate = 'old-template';
             vol.fromJSON(
                 {
-                    [resolve(storagePath, oldTemplate, 'file.txt')]: '.',
-                    [resolve(storagePath, oldTemplate, 'dir/file.txt')]: '.',
+                    [resolve(storagePath, templateName, 'file.txt')]: '.',
+                    [resolve(storagePath, templateName, 'dir/file.txt')]: '.',
                 },
-                cwd
+                fixture.memfsCwd
             );
 
             const input = {
-                templateName: oldTemplate,
+                templateName,
                 source: ['./project/**'],
                 options: {
                     base: false,
@@ -142,7 +147,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             expect(fs.existsSync(resolve(storagePath, input.templateName))).toBe(true);
             expect(fs.existsSync(resolve(storagePath, input.templateName, 'project'))).toBe(false);
 
-            forSearch.forEach(path => {
+            fixture.expectedRelativePaths.forEach(path => {
                 const entry = resolve(storagePath, input.templateName, path);
                 expect(fs.existsSync(entry)).toBe(true);
             });

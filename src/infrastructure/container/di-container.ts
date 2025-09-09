@@ -1,5 +1,4 @@
 import { container as tsryngeContainerInstance } from 'tsyringe';
-
 import FileSystemEntryFactory from '@core/file-system/entities/fs-entry-factory.ts';
 import FileSystemScanner from '@core/file-system/services/fs-scanner';
 import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
@@ -8,8 +7,10 @@ import CreateTemplateOperation from '@core/template/operations/create-template-o
 import TemplateRepository from '@core/template/repositories/index.ts';
 import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
 import TemplateService from '@core/template/services/index.ts';
-
 import type { DIContainer } from '@shared/types/di.ts';
+import GetTemplateOperation from '@core/template/operations/get-template-operation';
+import GetTemplateSchema from '@core/template/schemas/get-template-schema';
+import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
 
 class TsyringeContainer {
     private _container: DIContainer;
@@ -20,41 +21,61 @@ class TsyringeContainer {
     }
 
     initContainer(): void {
-        this.initCoreFileSystem();
         this.initCoreTemplate();
-    }
-
-    initCoreFileSystem() {
-        this._container.register('FileSystemEntryFactory', {
-            useClass: FileSystemEntryFactory,
-        });
-
-        this._container.register('FileSystemScanner', {
-            useClass: FileSystemScanner,
-        });
+        this.initCoreFileSystem();
+        this.initCorePathResolution();
     }
 
     initCoreTemplate() {
+        // Schema
         this._container.registerSingleton(CreateTemplateSchema);
+        this._container.registerSingleton(GetTemplateSchema);
 
+        // Operations
         this._container.register('CreateTemplateOperation', {
             useClass: CreateTemplateOperation,
         });
 
+        this._container.register('GetTemplateOperation', {
+            useClass: GetTemplateOperation,
+        });
+
+        // Services
         this._container.register('TemplateService', {
             useClass: TemplateService,
         });
 
+        // Repositories
         this._container.register('TemplateRepository', {
             useClass: TemplateRepository,
         });
 
+        // Factories
         this._container.register('TemplateEntryFactory', {
             useClass: TemplateEntryFactory,
         });
 
         this._container.register('TemplateFactory', {
             useClass: TemplateFactory,
+        });
+    }
+
+    initCoreFileSystem() {
+        // Factories
+        this._container.register('FileSystemEntryFactory', {
+            useClass: FileSystemEntryFactory,
+        });
+
+        // Services
+        this._container.register('FileSystemScanner', {
+            useClass: FileSystemScanner,
+        });
+    }
+
+    initCorePathResolution() {
+        // Factories
+        this._container.register('DestinationResolverFactory', {
+            useClass: DestinationResolverFactory,
         });
     }
 

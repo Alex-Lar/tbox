@@ -1,4 +1,4 @@
-import DestinationResolver from '@core/template/services/destination-resolver';
+import DestinationResolver from '@core/path-resolution/services/destination-resolver';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path';
 import { join } from 'node:path';
@@ -11,11 +11,11 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
 
 describe('DestinationResolver', () => {
     describe('resolve()', () => {
-        const storagePath = '/root/.local/share/tb';
+        const destination = '/root/.local/share/tb';
 
         beforeEach(() => {
             vi.clearAllMocks();
-            vi.mocked(getStoragePath).mockImplementation(() => storagePath);
+            vi.mocked(getStoragePath).mockImplementation(() => destination);
             vi.spyOn(process, 'cwd').mockImplementation(() => '/root');
         });
 
@@ -25,12 +25,12 @@ describe('DestinationResolver', () => {
             const basePath = 'my-template';
             const targetPath = '/root/project/dir';
 
-            const result = new DestinationResolver(source).resolve({
+            const result = new DestinationResolver(source, destination).resolve({
                 basePath,
                 targetPath,
             });
 
-            expect(result).toBe(join(storagePath, basePath, 'dir'));
+            expect(result).toBe(join(destination, basePath, 'dir'));
         });
 
         it('Should resolve many target paths correctly with one source', () => {
@@ -42,17 +42,17 @@ describe('DestinationResolver', () => {
                 '/root/project/very/nested/dir',
                 '/root/project/another/dir/that/is/very/nested',
             ];
-            const resolver = new DestinationResolver(source);
+            const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
                 return resolver.resolve({ basePath, targetPath });
             });
 
             expect(result).toEqual([
-                join(storagePath, basePath, 'dir'),
-                join(storagePath, basePath, 'nested/dir'),
-                join(storagePath, basePath, 'very/nested/dir'),
-                join(storagePath, basePath, 'another/dir/that/is/very/nested'),
+                join(destination, basePath, 'dir'),
+                join(destination, basePath, 'nested/dir'),
+                join(destination, basePath, 'very/nested/dir'),
+                join(destination, basePath, 'another/dir/that/is/very/nested'),
             ]);
         });
 
@@ -65,17 +65,17 @@ describe('DestinationResolver', () => {
                 '/root/some/stuff/very/nested/dir',
                 '/root/documents/file.txt',
             ];
-            const resolver = new DestinationResolver(source);
+            const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
                 return resolver.resolve({ basePath, targetPath });
             });
 
             expect(result).toEqual([
-                join(storagePath, basePath, 'dir'),
-                join(storagePath, basePath, 'another/dir/that/is/very/nested'),
-                join(storagePath, basePath, 'very/nested/dir'),
-                join(storagePath, basePath, 'file.txt'),
+                join(destination, basePath, 'dir'),
+                join(destination, basePath, 'another/dir/that/is/very/nested'),
+                join(destination, basePath, 'very/nested/dir'),
+                join(destination, basePath, 'file.txt'),
             ]);
         });
 
@@ -83,11 +83,11 @@ describe('DestinationResolver', () => {
             const source = ['./project/**'];
             const basePath = 'my-template';
             const targetPath = '/root/project/dir';
-            const resolver = new DestinationResolver(source);
+            const resolver = new DestinationResolver(source, destination);
 
             const result = resolver.resolve({ basePath, targetPath, includeSourceBase: true });
 
-            expect(result).toBe(join(storagePath, basePath, 'project', 'dir'));
+            expect(result).toBe(join(destination, basePath, 'project', 'dir'));
         });
 
         it('Should resolve many target paths correctly with many source paths and with includeSourceBase flag set to true', () => {
@@ -99,17 +99,17 @@ describe('DestinationResolver', () => {
                 '/root/some/stuff/very/nested/dir',
                 '/root/documents/file.txt',
             ];
-            const resolver = new DestinationResolver(source);
+            const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
                 return resolver.resolve({ basePath, targetPath, includeSourceBase: true });
             });
 
             expect(result).toEqual([
-                join(storagePath, basePath, 'project/dir'),
-                join(storagePath, basePath, 'project/another/dir/that/is/very/nested'),
-                join(storagePath, basePath, 'stuff/very/nested/dir'),
-                join(storagePath, basePath, 'documents/file.txt'),
+                join(destination, basePath, 'project/dir'),
+                join(destination, basePath, 'project/another/dir/that/is/very/nested'),
+                join(destination, basePath, 'stuff/very/nested/dir'),
+                join(destination, basePath, 'documents/file.txt'),
             ]);
         });
 
@@ -122,17 +122,17 @@ describe('DestinationResolver', () => {
                 '/root/projects/app/main.ts',
                 '/root/projects/package.json',
             ];
-            const resolver = new DestinationResolver(source);
+            const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
                 return resolver.resolve({ basePath, targetPath, includeSourceBase: true });
             });
 
             expect(result).toEqual([
-                join(storagePath, basePath, 'utils', 'helper.ts'),
-                join(storagePath, basePath, 'helpers', 'array.ts'),
-                join(storagePath, basePath, 'projects', 'app/main.ts'),
-                join(storagePath, basePath, 'projects', 'package.json'),
+                join(destination, basePath, 'utils', 'helper.ts'),
+                join(destination, basePath, 'helpers', 'array.ts'),
+                join(destination, basePath, 'projects', 'app/main.ts'),
+                join(destination, basePath, 'projects', 'package.json'),
             ]);
         });
     });

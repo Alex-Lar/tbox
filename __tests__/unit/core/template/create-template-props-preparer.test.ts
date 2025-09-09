@@ -1,4 +1,4 @@
-import { CreateTemplatePropsPreparer } from '@core/template/utils/create-template-props-preparer';
+import { CreateTemplatePropsPreparer } from '@core/template/utils/props-preparer/create-template-props-preparer';
 import * as fileSystem from '@shared/utils/file-system';
 import { mockCreateTemplateProps } from '__tests__/helpers';
 import { PathLike } from 'node:fs';

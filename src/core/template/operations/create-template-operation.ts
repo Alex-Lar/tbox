@@ -3,7 +3,7 @@ import TemplateService from '@core/template/services/index.ts';
 import { CreateTemplateProps, Operation } from '@core/template/operations/types.ts';
 import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
 import { ensureStorage } from '@infrastructure/file-system/storage/storage.ts';
-import { CreateTemplatePropsPreparer } from '@core/template/utils/create-template-props-preparer.ts';
+import { CreateTemplatePropsPreparer } from '../utils/props-preparer/create-template-props-preparer';
 
 @injectable()
 export default class CreateTemplateOperation implements Operation<CreateTemplateProps> {

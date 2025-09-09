@@ -1,10 +1,10 @@
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import TemplateEntry from '@core/template/entities/template-entry.ts';
 
 import type { Factory } from '@shared/types/factory.ts';
-import DestinationResolver from '../services/destination-resolver';
 import { FileSystemEntry } from '@core/file-system/entities';
 import { AddOptions } from '@application/commands/create';
+import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
 
 interface TemplateEntryProps {
     entry: FileSystemEntry;
@@ -13,6 +13,11 @@ interface TemplateEntryProps {
 
 @injectable()
 export default class TemplateEntryFactory implements Factory<TemplateEntry, TemplateEntryProps> {
+    constructor(
+        @inject('DestinationResolverFactory')
+        private destResolverFactory: DestinationResolverFactory
+    ) {}
+
     create({ entry, destination }: TemplateEntryProps): TemplateEntry {
         return new TemplateEntry(entry, destination);
     }
@@ -20,27 +25,29 @@ export default class TemplateEntryFactory implements Factory<TemplateEntry, Temp
     createMany({
         entries,
         source,
+        destination,
         templateName,
         options,
     }: {
         entries: FileSystemEntry[];
         source: string[];
+        destination: string;
         templateName: string;
-        options: Pick<AddOptions, 'base'>;
+        options?: Pick<AddOptions, 'base'>;
     }): TemplateEntry[] {
-        const destResolver = new DestinationResolver(source);
+        const destinationResolver = this.destResolverFactory.create({ source, destination });
         const templateEntries: TemplateEntry[] = [];
 
         for (const entry of entries) {
             if (!entry.name) continue;
 
-            const destination = destResolver.resolve({
+            const entyDest = destinationResolver.resolve({
                 targetPath: entry.path,
                 basePath: templateName,
-                includeSourceBase: options.base,
+                includeSourceBase: options?.base ?? false,
             });
 
-            templateEntries.push(this.create({ entry, destination }));
+            templateEntries.push(this.create({ entry, destination: entyDest }));
         }
 
         return templateEntries;

@@ -1,5 +1,5 @@
+import { CreateTemplateProps } from '@core/template/operations/types';
 import { isDirSync } from '@shared/utils/file-system';
-import { CreateTemplateProps } from '../operations/types';
 import { join, normalize } from '@shared/utils/path';
 
 export class CreateTemplatePropsPreparer {
@@ -21,7 +21,7 @@ export class CreateTemplatePropsPreparer {
 
     private static prepareSource(source: string[]): string[] {
         const preparedSource: string[] = [];
-        const globPatternRegex = /[\?\*\[\]\{\},]/;
+        const globPatternRegex = /[\!\?\*\[\]\{\},]/;
 
         for (let path of source) {
             if (globPatternRegex.test(path)) {

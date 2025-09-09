@@ -3,7 +3,8 @@ import TemplateEntry from './template-entry.ts';
 export default class Template {
     constructor(
         private _name: string,
-        private _path: string,
+        private _source: string | string[],
+        private _destination: string,
         private _entries: TemplateEntry[]
     ) {}
 
@@ -11,8 +12,12 @@ export default class Template {
         return this._name;
     }
 
-    get path(): string {
-        return this._path;
+    get source(): string | string[] {
+        return this._source;
+    }
+
+    get destination(): string {
+        return this._destination;
     }
 
     get entries(): TemplateEntry[] {

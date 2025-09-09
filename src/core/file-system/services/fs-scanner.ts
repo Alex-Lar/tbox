@@ -15,15 +15,21 @@ export default class FileSystemScanner {
     ) {}
 
     private async *scanEntries(source: string | string[], options: ScannerOptions = {}) {
-        const streamEntry = fg.stream(source, {
-            dot: true,
-            objectMode: true,
-            onlyFiles: false,
-            markDirectories: true,
-            absolute: true,
-            ignore: options.exclude ?? [],
-            unique: true,
-        });
+        let streamEntry;
+
+        try {
+            streamEntry = fg.stream(source, {
+                dot: true,
+                objectMode: true,
+                onlyFiles: false,
+                markDirectories: true,
+                absolute: true,
+                ignore: options.exclude ?? [],
+                unique: true,
+            });
+        } catch (error) {
+            throw new Error(`Error occured while scanning source: ${source}`, { cause: error });
+        }
 
         for await (const entry of streamEntry as AsyncIterable<GlobEntry>) {
             yield entry;

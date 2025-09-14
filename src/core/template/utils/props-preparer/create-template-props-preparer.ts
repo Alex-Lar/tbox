@@ -50,7 +50,6 @@ export class CreateTemplatePropsPreparer {
                 preparedExclude.push(pattern);
                 continue;
             }
-            console.log(pattern);
             preparedExclude.push(`**/${pattern}/**`, `**/${pattern}`);
         }
 

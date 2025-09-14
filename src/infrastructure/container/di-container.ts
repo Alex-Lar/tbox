@@ -11,6 +11,7 @@ import type { DIContainer } from '@shared/types/di.ts';
 import GetTemplateOperation from '@core/template/operations/get-template-operation';
 import GetTemplateSchema from '@core/template/schemas/get-template-schema';
 import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
+import ListTemplateOperation from '@core/template/operations/list-template-operation';
 
 class TsyringeContainer {
     private _container: DIContainer;
@@ -38,6 +39,10 @@ class TsyringeContainer {
 
         this._container.register('GetTemplateOperation', {
             useClass: GetTemplateOperation,
+        });
+
+        this._container.register('ListTemplateOperation', {
+            useClass: ListTemplateOperation,
         });
 
         // Services

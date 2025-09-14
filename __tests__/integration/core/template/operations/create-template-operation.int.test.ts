@@ -19,14 +19,9 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
     };
 });
 
-// TODO: test force flag
-// 	- template exists and force is false
-//  - file copy error and force is true
-
-// TODO: test invalid input values
-// 	- invalid templateName
-//	- invalid source paths
-//	- invalid options
+// TODO:
+// 	- test force flag
+// 	- test invalid input
 
 describe('CreateTemplateOperation Integration Suite', () => {
     let operation: CreateTemplateOperation;

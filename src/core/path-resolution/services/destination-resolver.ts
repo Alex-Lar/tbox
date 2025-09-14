@@ -88,19 +88,3 @@ export default class DestinationResolver {
     }
 }
 
-// GET
-// > DestinationResolver
-// 		> targetPath: /root/.local/share/tb/test-template/index.html
-// 		> basePath: test-template
-// 		> includeSourceBase: false
-// 		> finalBasePath: test-template
-
-// CREATE
-// > DestinationResolver
-//  	> DestinationResolver
-//     	> targetPath: /home/project/assets/css/styles.css
-//     	> basePath: test-template
-//     	> includeSourceBase: false
-//     	> finalBasePath: test-template
-// -
-//   	> Single destination result: /root/.local/share/tb/test-template/assets/css/styles.css

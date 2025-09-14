@@ -9,6 +9,8 @@ import FileSystemScanner from '@core/file-system/services/fs-scanner';
 
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 import { join } from '@shared/utils/path';
+import { dim, important, info, warning } from '@shared/utils/style';
+import { APP_NAME, BULLET_SYMBOL, TREE_BRANCH, TREE_END } from '@shared/constants';
 
 @injectable()
 export default class TemplateService {
@@ -45,7 +47,7 @@ export default class TemplateService {
             name: templateName,
         });
 
-        await this.templateRepository.create(template, options);
+        await this.templateRepository.save(template, options);
     }
 
     async get({ templateName, destination }: GetTemplateProps) {
@@ -67,6 +69,37 @@ export default class TemplateService {
             destination,
         });
 
-        await this.templateRepository.extract(template);
+        await this.templateRepository.copy(template);
+    }
+
+    async list(): Promise<void> {
+        const templateNames = await this.templateRepository.list();
+
+        if (!templateNames || !templateNames.length) {
+            console.log('');
+            console.log(warning('┌────────────────────────────────────────┐'));
+            console.log(warning('│           No templates found           │'));
+            console.log(warning('└────────────────────────────────────────┘'));
+            console.log('');
+            console.log(dim('To get started:'));
+            console.log(
+                dim(`  ${BULLET_SYMBOL} Run \``) +
+                    info(`${APP_NAME} create`) +
+                    dim('` to add a new template')
+            );
+            console.log('');
+            return;
+        }
+
+        console.log(dim(`Total templates: ${templateNames.length}`));
+
+        const maxLength = Math.max(...templateNames.map(name => name.length));
+        templateNames.forEach((name, index) => {
+            const paddedName = name.padEnd(maxLength + 2, ' ');
+            const isLast = index === templateNames.length - 1;
+            const prefix = isLast ? TREE_END : TREE_BRANCH;
+
+            console.log(`${dim(prefix)} ${important(paddedName)}`);
+        });
     }
 }

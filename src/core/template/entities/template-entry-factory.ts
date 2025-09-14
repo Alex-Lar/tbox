@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import TemplateEntry from '@core/template/entities/template-entry.ts';
 
-import type { Factory } from '@shared/types/factory.ts';
+import type { Factory } from '@shared/interfaces/factory';
 import { FileSystemEntry } from '@core/file-system/entities';
 import { AddOptions } from '@application/commands/create';
 import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';

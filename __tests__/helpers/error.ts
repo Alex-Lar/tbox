@@ -1,4 +1,4 @@
-import { PrettyError } from '@shared/types/error';
+import PrettyError from '@shared/interfaces/pretty-error';
 import { vi } from 'vitest';
 
 export const mockPrettyError = (msg?: string): PrettyError => ({

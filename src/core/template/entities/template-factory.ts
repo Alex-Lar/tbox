@@ -1,4 +1,4 @@
-import { Factory } from '@shared/types/factory.ts';
+import { Factory } from '@shared/interfaces/factory.ts';
 import { TemplateProps } from './types.ts';
 import Template from './template.ts';
 import { injectable } from 'tsyringe';

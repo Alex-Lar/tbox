@@ -3,14 +3,14 @@ import { mockDirentDir, mockDirentFile } from '__tests__/helpers';
 import { join } from 'node:path';
 
 type SimpleFixtureProps = {
-    isTemplate: boolean;
-    templateName: string;
+    isTemplate?: boolean;
+    templateName?: string;
 };
 
 export function getSimpleStructureFixture({
     isTemplate = false,
     templateName = 'test-template',
-}: SimpleFixtureProps) {
+}: SimpleFixtureProps = {}) {
     // User project paths
     const userProjectRoot = '/home';
     const userProjectRelativePath = './project';

@@ -7,8 +7,10 @@ import {
     mockGlobEntryStream,
 } from '__tests__/helpers/file-system';
 import { mockCreateTemplateProps } from '__tests__/helpers/template';
+import { createMemfsStructureFromPaths } from './memfs';
 
 export {
+    createMemfsStructureFromPaths,
     mockInvalidPrettyError,
     mockPrettyError,
     getFastGlobStreamMock,

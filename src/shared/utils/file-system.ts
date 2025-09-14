@@ -1,5 +1,12 @@
 import { isNodeError } from '@shared/guards/error';
-import type { BigIntStats, PathLike, StatOptions, Stats, Dirent as NodeDirent } from 'node:fs';
+import type {
+    BigIntStats,
+    PathLike,
+    StatOptions,
+    Stats,
+    Dirent as NodeDirent,
+    ObjectEncodingOptions,
+} from 'node:fs';
 import {
     existsSync as fsExistsSync,
     mkdirSync as fsMkdirSync,
@@ -7,6 +14,7 @@ import {
 } from 'node:fs';
 import {
     constants as fsConstants,
+    readdir as fsReaddir,
     lstat as fsLstat,
     mkdir as fsMkdir,
     copyFile as fsCopyFile,
@@ -18,6 +26,19 @@ import {
 export type Dirent = NodeDirent;
 
 /* Async API */
+export async function readdir(
+    path: PathLike,
+    options?:
+        | (ObjectEncodingOptions & {
+              withFileTypes?: false | undefined;
+              recursive?: boolean | undefined;
+          })
+        | BufferEncoding
+        | null
+) {
+    return await fsReaddir(path, options);
+}
+
 export async function lstat(path: PathLike, opts?: StatOptions): Promise<Stats | BigIntStats> {
     return await fsLstat(path, opts);
 }

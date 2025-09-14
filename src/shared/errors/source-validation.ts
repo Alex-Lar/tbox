@@ -1,4 +1,4 @@
-import { PrettyError } from '@shared/types/error.ts';
+import PrettyError from '@shared/interfaces/pretty-error.ts';
 import {
     ANGLE_QUOTE_SYMBOL,
     BULLET_SYMBOL,

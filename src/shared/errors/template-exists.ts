@@ -1,4 +1,4 @@
-import { PrettyError } from '@shared/types/error.ts';
+import PrettyError from '@shared/interfaces/pretty-error.ts';
 import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols.ts';
 
 export default class TemplateExistsError extends Error implements PrettyError {

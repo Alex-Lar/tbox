@@ -1,4 +1,5 @@
-import { NodeError, PrettyError } from '@shared/types/error.ts';
+import PrettyError from '@shared/interfaces/pretty-error';
+import { NodeError } from '@shared/types/error.ts';
 
 export function isPrettyError(error: unknown): error is PrettyError {
     return typeof (error as PrettyError)?.formatForDisplay === 'function';

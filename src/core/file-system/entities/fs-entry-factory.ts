@@ -3,7 +3,7 @@ import type { Dirent, Stats } from 'fs';
 import FileSystemEntry from './fs-entry.ts';
 import { FileSystemEntryProps, FileSystemEntryType, GlobEntry } from './types.ts';
 import Logger from '@shared/utils/logger.ts';
-import { Factory } from '@shared/types/factory.ts';
+import { Factory } from '@shared/interfaces/factory.ts';
 import { parse } from '@shared/utils/path.ts';
 import { isGlobEntry } from '@core/guards/entry.ts';
 

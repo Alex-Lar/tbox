@@ -12,6 +12,8 @@ import GetTemplateOperation from '@core/template/operations/get-template-operati
 import GetTemplateSchema from '@core/template/schemas/get-template-schema';
 import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
 import ListTemplateOperation from '@core/template/operations/list-template-operation';
+import RemoveTemplateSchema from '@core/template/schemas/remove-template-schema';
+import RemoveTemplateOperation from '@core/template/operations/remove-template-operation';
 
 class TsyringeContainer {
     private _container: DIContainer;
@@ -31,6 +33,7 @@ class TsyringeContainer {
         // Schema
         this._container.registerSingleton(CreateTemplateSchema);
         this._container.registerSingleton(GetTemplateSchema);
+        this._container.registerSingleton(RemoveTemplateSchema);
 
         // Operations
         this._container.register('CreateTemplateOperation', {
@@ -39,6 +42,10 @@ class TsyringeContainer {
 
         this._container.register('GetTemplateOperation', {
             useClass: GetTemplateOperation,
+        });
+
+        this._container.register('RemoveTemplateOperation', {
+            useClass: RemoveTemplateOperation,
         });
 
         this._container.register('ListTemplateOperation', {

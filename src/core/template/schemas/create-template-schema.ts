@@ -37,7 +37,7 @@ export default class CreateTemplateSchema extends TemplateSchema {
     }
 
     props(value: unknown = {}): CreateTemplateProps {
-        if (!isCreateTemplateProps(value)) throw new Error('Incorrect CreateTemplateProps object');
+        if (!isCreateTemplateProps(value)) throw new Error('Invalid command arguments');
 
         return {
             templateName: this.templateName(value.templateName),

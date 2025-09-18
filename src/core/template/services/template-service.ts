@@ -2,7 +2,11 @@ import { inject, injectable } from 'tsyringe';
 
 import TemplateRepository from '@core/template/repositories/template-repository.ts';
 import TemplateFactory from '@core/template/entities/template-factory.ts';
-import type { CreateTemplateProps, GetTemplateProps } from '@core/template/operations/types.ts';
+import type {
+    CreateTemplateProps,
+    GetTemplateProps,
+    RemoveTemplateProps,
+} from '@core/template/operations/types.ts';
 import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
 
 import FileSystemScanner from '@core/file-system/services/fs-scanner';
@@ -11,6 +15,7 @@ import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 import { join } from '@shared/utils/path';
 import { dim, important, info, warning } from '@shared/utils/style';
 import { APP_NAME, BULLET_SYMBOL, TREE_BRANCH, TREE_END } from '@shared/constants';
+import { TemplateNotFoundError } from '@shared/errors';
 
 @injectable()
 export default class TemplateService {
@@ -72,6 +77,28 @@ export default class TemplateService {
         await this.templateRepository.copy(template);
     }
 
+    async remove({ templateName }: RemoveTemplateProps): Promise<void> {
+        try {
+            await this.templateRepository.delete(templateName);
+        } catch (error) {
+            if (error instanceof TemplateNotFoundError) {
+                console.log('');
+                console.log(warning('┌────────────────────────────────────────┐'));
+                console.log(warning('│           Template not found           │'));
+                console.log(warning('└────────────────────────────────────────┘'));
+                console.log('');
+                console.log('Template: ' + important(`${templateName}`));
+                console.log('');
+                console.log('Solutions:');
+                console.log(error.solution);
+                console.log('');
+                return;
+            }
+
+            throw error;
+        }
+    }
+
     async list(): Promise<void> {
         const templateNames = await this.templateRepository.list();
 
@@ -81,11 +108,9 @@ export default class TemplateService {
             console.log(warning('│           No templates found           │'));
             console.log(warning('└────────────────────────────────────────┘'));
             console.log('');
-            console.log(dim('To get started:'));
+            console.log('To get started:');
             console.log(
-                dim(`  ${BULLET_SYMBOL} Run \``) +
-                    info(`${APP_NAME} create`) +
-                    dim('` to add a new template')
+                `  ${BULLET_SYMBOL} Run \`` + info(`${APP_NAME} create`) + '` to add a new template'
             );
             console.log('');
             return;

@@ -1,7 +1,11 @@
 import { program } from 'commander';
 import { APP_NAME } from '@shared/constants/app.ts';
-import { buildCreateCommand, buildGetCommand } from '@application/commands';
-import buildListCommand from './commands/list';
+import {
+    buildCreateCommand,
+    buildGetCommand,
+    buildListCommand,
+    buildRemoveCommand,
+} from '@application/commands';
 
 class Application {
     constructor() {}
@@ -12,6 +16,7 @@ class Application {
         program
             .addCommand(buildCreateCommand())
             .addCommand(buildGetCommand())
+            .addCommand(buildRemoveCommand())
             .addCommand(buildListCommand());
 
         await program.parseAsync();

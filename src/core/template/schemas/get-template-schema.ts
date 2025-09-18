@@ -20,7 +20,7 @@ export default class GetTemplateSchema extends TemplateSchema {
     }
 
     props(value: unknown = {}): GetTemplateProps {
-        if (!isGetTemplateProps(value)) throw new Error('Ivalid command arguments');
+        if (!isGetTemplateProps(value)) throw new Error('Invalid command arguments');
 
         return {
             templateName: this.templateName(value.templateName),

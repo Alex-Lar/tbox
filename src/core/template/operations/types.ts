@@ -14,3 +14,7 @@ export type GetTemplateProps = {
     templateName: string;
     destination: string;
 };
+
+export type RemoveTemplateProps = {
+    templateName: string;
+};

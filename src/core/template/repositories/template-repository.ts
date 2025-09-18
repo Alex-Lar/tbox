@@ -10,6 +10,8 @@ import { existsSync, readdir, remove, rename } from '@shared/utils/file-system.t
 import Logger from '@shared/utils/logger.ts';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 import { isNodeError } from '@shared/guards/error.ts';
+import { join } from '@shared/utils/path.ts';
+import { TemplateNotFoundError } from '@shared/errors/template-not-found.ts';
 
 @injectable()
 export default class TemplateRepository implements TemplateRepositoryInterface {
@@ -67,6 +69,25 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
         };
 
         await new Transaction({ execute, rollback, commit }).run();
+    }
+
+    /**
+     * @throws {TemplateNotFoundError} if template does not exists
+     */
+    async delete(templateName: string): Promise<void> {
+        const templatePath = join(getStoragePath(), templateName);
+
+        if (!existsSync(templatePath)) {
+            throw new TemplateNotFoundError(templateName);
+        }
+
+        try {
+            await remove(templatePath);
+        } catch (error) {
+            throw new Error(`Error occurred while deleting template: ${templateName}`, {
+                cause: error,
+            });
+        }
     }
 
     async list(): Promise<string[]> {

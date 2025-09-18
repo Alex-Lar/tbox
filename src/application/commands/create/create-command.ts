@@ -5,6 +5,7 @@ import CreateTemplateOperation from '@core/template/operations/create-template-o
 
 export default function buildCreateCommand() {
     return new Command('create')
+        .alias('new')
         .argument('<template-name>', 'unique template name')
         .argument('<source...>', 'source to save as template')
         .option('-f, --force', 'ignore warnings and errors', false)

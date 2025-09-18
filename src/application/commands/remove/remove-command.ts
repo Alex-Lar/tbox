@@ -4,6 +4,7 @@ import RemoveTemplateOperation from '@core/template/operations/remove-template-o
 
 export default function buildRemoveCommand() {
     return new Command('remove')
+        .alias('rm')
         .argument('<template-name>', 'unique template identifier')
         .action(async (templateName: string) => {
             const operation = container.resolve<RemoveTemplateOperation>('RemoveTemplateOperation');

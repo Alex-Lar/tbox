@@ -1,19 +1,28 @@
 import { container as tsryngeContainerInstance } from 'tsyringe';
+
 import FileSystemEntryFactory from '@core/file-system/entities/fs-entry-factory.ts';
-import FileSystemScanner from '@core/file-system/services/fs-scanner';
 import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
 import TemplateFactory from '@core/template/entities/template-factory.ts';
-import CreateTemplateOperation from '@core/template/operations/create-template-operation.ts';
+
 import TemplateRepository from '@core/template/repositories/index.ts';
-import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
+
 import TemplateService from '@core/template/services/index.ts';
-import type { DIContainer } from '@shared/types/di.ts';
+import FileSystemScanner from '@core/file-system/services/fs-scanner';
+
+import CreateTemplateOperation from '@core/template/operations/create-template-operation.ts';
 import GetTemplateOperation from '@core/template/operations/get-template-operation';
-import GetTemplateSchema from '@core/template/schemas/get-template-schema';
-import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
 import ListTemplateOperation from '@core/template/operations/list-template-operation';
-import RemoveTemplateSchema from '@core/template/schemas/remove-template-schema';
 import RemoveTemplateOperation from '@core/template/operations/remove-template-operation';
+
+import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
+import GetTemplateSchema from '@core/template/schemas/get-template-schema';
+import RemoveTemplateSchema from '@core/template/schemas/remove-template-schema';
+
+import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
+
+import { OraLoaderService } from '@infrastructure/loader/ora-loader-service';
+
+import type { DIContainer } from '@shared/types/di.ts';
 
 class TsyringeContainer {
     private _container: DIContainer;
@@ -27,6 +36,7 @@ class TsyringeContainer {
         this.initCoreTemplate();
         this.initCoreFileSystem();
         this.initCorePathResolution();
+        this.initInfrastructureLoader();
     }
 
     initCoreTemplate() {
@@ -88,6 +98,13 @@ class TsyringeContainer {
         // Factories
         this._container.register('DestinationResolverFactory', {
             useClass: DestinationResolverFactory,
+        });
+    }
+
+    initInfrastructureLoader() {
+        // Services
+        this._container.register('LoaderService', {
+            useClass: OraLoaderService,
         });
     }
 

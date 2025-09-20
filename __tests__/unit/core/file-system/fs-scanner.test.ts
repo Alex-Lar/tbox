@@ -5,24 +5,34 @@ import FastGlob from 'fast-glob';
 import { mockGlobEntryStream } from '__tests__/helpers';
 import container from '@infrastructure/container/di-container';
 import { fourGlobEntryObjects } from '__tests__/fixtures/glob-entries';
+import { StubLoaderService } from '@infrastructure/loader/stub-loader-service';
 
 vi.mock('fast-glob');
 
 describe('FileSystemScanner', () => {
-  let scanner: FileSystemScanner;
+    let scanner: FileSystemScanner;
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    scanner = container.resolve<FileSystemScanner>('FileSystemScanner');
-  });
+    container.register('LoaderService', {
+        useValue: new StubLoaderService(),
+    });
 
-  it('returns array of FileSystemEntry objects', async () => {
-    const mockStream = mockGlobEntryStream(fourGlobEntryObjects);
-    vi.mocked(FastGlob.stream).mockReturnValueOnce(mockStream);
+    beforeEach(() => {
+        vi.clearAllMocks();
+        scanner = container.resolve<FileSystemScanner>('FileSystemScanner');
+    });
 
-    const result = await scanner.scan('*');
+    it('returns array of FileSystemEntry objects', async () => {
+        const mockStream = mockGlobEntryStream(fourGlobEntryObjects);
+        vi.mocked(FastGlob.stream).mockReturnValueOnce(mockStream);
 
-    expect(result).toHaveLength(4);
-    expect(result.map(e => e.name)).toEqual(['file1.txt', 'file2.txt', 'subfile.txt', 'subdir']);
-  });
+        const result = await scanner.scan('*');
+
+        expect(result).toHaveLength(4);
+        expect(result.map(e => e.name)).toEqual([
+            'file1.txt',
+            'file2.txt',
+            'subfile.txt',
+            'subdir',
+        ]);
+    });
 });

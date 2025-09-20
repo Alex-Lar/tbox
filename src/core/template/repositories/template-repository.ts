@@ -1,20 +1,26 @@
-import { injectable } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 import type { AddOptions } from '@application/commands/create/index.ts';
 import Template from '../entities/template.ts';
 import { TemplateRepositoryInterface } from './types.ts';
 import TemplateCopier from '@infrastructure/file-system/template/template-copier.ts';
 import TemplateExistsError from '@shared/errors/template-exists.ts';
 import { generateTempDirName } from '@shared/utils/random.ts';
-import Transaction, { TransactionHandler } from '@shared/patterns/transaction.ts';
+import Transaction from '@shared/patterns/transaction.ts';
 import { existsSync, readdir, remove, rename } from '@shared/utils/file-system.ts';
-import Logger from '@shared/utils/logger.ts';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 import { isNodeError } from '@shared/guards/error.ts';
 import { join } from '@shared/utils/path.ts';
 import { TemplateNotFoundError } from '@shared/errors/template-not-found.ts';
+import type { LoaderService } from '@shared/interfaces/loader-service.ts';
+import { important } from '@shared/utils/style.ts';
 
 @injectable()
 export default class TemplateRepository implements TemplateRepositoryInterface {
+    constructor(
+        @inject('LoaderService')
+        private loader: LoaderService
+    ) {}
+
     /**
      * @throws {TemplateExistsError} if the force flag is false and the template already exists.
      */
@@ -27,26 +33,31 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
         }
 
         const execute = async () => {
+            this.loader.start('Saving...');
             await TemplateCopier.copyTemplate(template, options.force);
         };
 
-        let rollback: TransactionHandler = null;
-        let commit: TransactionHandler = null;
+        let commit = async () => {
+            this.loader.succeed(`Template ${important(template.name)} is created!`);
+        };
+
+        let rollback = async () => {
+            this.loader.fail('Saving failed!');
+            await remove(templateStorage);
+        };
 
         if (templateAlreadyExists && options.force) {
             const oldTemplateTemporaryDirname = generateTempDirName();
             await rename(templateStorage, oldTemplateTemporaryDirname);
 
             rollback = async () => {
+                this.loader.fail('Saving failed!');
                 await remove(templateStorage);
                 await rename(oldTemplateTemporaryDirname, templateStorage);
             };
             commit = async () => {
+                this.loader.succeed(`Template ${important(template.name)} is created!`);
                 await remove(oldTemplateTemporaryDirname);
-            };
-        } else {
-            rollback = async () => {
-                await remove(templateStorage);
             };
         }
 
@@ -55,16 +66,18 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
 
     async copy(template: Template): Promise<void> {
         const execute = async () => {
+            this.loader.start('Extracting...');
             await TemplateCopier.copyTemplate(template);
         };
 
         const rollback = async () => {
+            this.loader.fail('Extraction failed!');
             await remove(template.destination);
         };
 
         const commit = async () => {
-            Logger.success(
-                `Template '${template.name}' successfully copied to: ${template.destination}`
+            this.loader.succeed(
+                `Template ${important(template.name)} is extracted to '${template.destination}'!`
             );
         };
 
@@ -82,12 +95,18 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
         }
 
         try {
+            this.loader.start(`Removing ${important(templateName)}...`);
+
             await remove(templatePath);
         } catch (error) {
+            this.loader.fail('Removal failed!');
+
             throw new Error(`Error occurred while deleting template: ${templateName}`, {
                 cause: error,
             });
         }
+
+        this.loader.succeed(`Template ${important(templateName)} is removed!`);
     }
 
     async list(): Promise<string[]> {

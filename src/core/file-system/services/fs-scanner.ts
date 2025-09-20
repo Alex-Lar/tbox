@@ -6,12 +6,15 @@ import { ScannerOptions } from '@core/file-system/services/types';
 import FileSystemEntryFactory from '@core/file-system/entities/fs-entry-factory.ts';
 import { GlobEntry } from '@core/file-system/entities/types.ts';
 import FileSystemEntry from '@core/file-system/entities/fs-entry.ts';
+import type { LoaderService } from '@shared/interfaces/loader-service';
 
 @injectable()
 export default class FileSystemScanner {
     constructor(
         @inject('FileSystemEntryFactory')
-        private fsEntryFactory: FileSystemEntryFactory
+        private fsEntryFactory: FileSystemEntryFactory,
+        @inject('LoaderService')
+        private loader: LoaderService
     ) {}
 
     private async *scanEntries(source: string | string[], options: ScannerOptions = {}) {
@@ -46,11 +49,24 @@ export default class FileSystemScanner {
         const globEntryGen = this.scanEntries(source, options);
         const fsEntries: FileSystemEntry[] = [];
 
-        for await (const globEntry of globEntryGen) {
-            const fsEntry = this.fsEntryFactory.createFromGlobEntry(globEntry);
-            fsEntries.push(fsEntry);
+        try {
+            let fileCount = 0;
+            this.loader.start('Preparing...');
+
+            for await (const globEntry of globEntryGen) {
+                const fsEntry = this.fsEntryFactory.createFromGlobEntry(globEntry);
+                fsEntries.push(fsEntry);
+
+                if (fsEntry.isFile()) {
+                    this.loader.update({ suffixText: `(${++fileCount} files)` });
+                }
+            }
+        } catch (error) {
+            this.loader.fail();
+            throw error;
         }
 
+        this.loader.succeed();
         return fsEntries;
     }
 }

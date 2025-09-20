@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import CreateTemplateOperation from '@core/template/operations/create-template-operation';
-import { beforeEach, describe, expect, vi, it } from 'vitest';
+import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
 import container from '@infrastructure/container/di-container';
 import { getSimpleStructureFixture } from '__tests__/fixtures/simple-structure';
 import FastGlob from 'fast-glob';
@@ -8,6 +8,7 @@ import { getFastGlobStreamMock } from '__tests__/helpers';
 import { fs, vol } from 'memfs';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path';
 import { resolve } from 'node:path';
+import { StubLoaderService } from '@infrastructure/loader/stub-loader-service';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
@@ -26,8 +27,13 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
 describe('CreateTemplateOperation Integration Suite', () => {
     let operation: CreateTemplateOperation;
 
+    container.register('LoaderService', {
+        useValue: new StubLoaderService(),
+    });
+
     beforeEach(() => {
         vi.clearAllMocks();
+
         operation = container.resolve<CreateTemplateOperation>('CreateTemplateOperation');
     });
 

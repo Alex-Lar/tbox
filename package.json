@@ -1,5 +1,5 @@
 {
-    "name": "tb-cli",
+    "name": "template-box",
     "version": "0.0.1",
     "description": "CLI tool for managing file/directory templates",
     "main": "./dist/index.mjs",

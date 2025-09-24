@@ -8,7 +8,8 @@
         "tbox": "bin/tbox"
     },
     "files": [
-        "dist"
+        "dist",
+        "bin"
     ],
     "scripts": {
         "build": "npm run type-check && npm run build-tsup",

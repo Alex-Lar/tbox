@@ -1,17 +1,18 @@
 import { CreateTemplateProps } from '@core/template/operations/types';
 import { isDirSync } from '@shared/utils/file-system';
+import { isGlobPattern } from '@shared/utils/glob';
 import { join, normalize } from '@shared/utils/path';
 
 export class CreateTemplatePropsPreparer {
     static prepare(props: CreateTemplateProps): CreateTemplateProps {
-        const { options } = props;
+        const { options, source } = props;
 
         if (options.exclude.length) {
             options.exclude = this.prepareExclude(options.exclude);
         }
 
-        if (options.recursive && props.source.length) {
-            props.source = this.prepareSource(props.source);
+        if (source.length) {
+            props.source = this.prepareSource(source, options.recursive);
         }
 
         return {
@@ -19,12 +20,11 @@ export class CreateTemplatePropsPreparer {
         };
     }
 
-    private static prepareSource(source: string[]): string[] {
+    private static prepareSource(source: string[], recursive: boolean): string[] {
         const preparedSource: string[] = [];
-        const globPatternRegex = /[\!\?\*\[\]\{\},]/;
 
-        for (let path of source) {
-            if (globPatternRegex.test(path)) {
+        for (const path of source) {
+            if (isGlobPattern(path)) {
                 preparedSource.push(path);
                 continue;
             }
@@ -34,8 +34,11 @@ export class CreateTemplatePropsPreparer {
                 continue;
             }
 
-            const globPath = join(path, '/**');
-            preparedSource.push(globPath);
+            if (recursive) {
+                preparedSource.push(join(path, '/**'));
+            } else {
+                preparedSource.push(join(path, '/*'));
+            }
         }
 
         return preparedSource;

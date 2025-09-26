@@ -41,10 +41,9 @@ export default class TemplateEntryFactory implements Factory<TemplateEntry, Temp
         for (const entry of entries) {
             if (!entry.name) continue;
 
-            const entyDest = destinationResolver.resolve({
-                targetPath: entry.path,
+            const entyDest = destinationResolver.resolve(entry.path, {
                 destinationSubpath: templateName ?? '',
-                preserveLastSourceDir: entry.isFile() ? false : (options?.preserveLastDir ?? false),
+                preserveLastSourceDir: options?.preserveLastDir ?? false,
             });
 
             templateEntries.push(this.create({ entry, destination: entyDest }));

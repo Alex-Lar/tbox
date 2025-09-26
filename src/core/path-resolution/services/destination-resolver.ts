@@ -1,7 +1,7 @@
 import { matchGlob } from '@shared/utils/pattern-matcher';
 import { join, normalize, parse, relative, resolve } from '@shared/utils/path';
-import { getParentPathFromGlobString } from '@shared/utils/glob';
-import { ResolvedSourcePattern, ResolveOptions } from './types';
+import { getParentPathFromGlobString, isGlobPattern } from '@shared/utils/glob';
+import { ResolvedSourcePattern, ResolveParams } from './types';
 
 export default class DestinationResolver {
     private resolvedSourcePatterns: ResolvedSourcePattern[] = [];
@@ -44,16 +44,18 @@ export default class DestinationResolver {
      * })
      * // -> '/var/storage/backup/utils/helpers.ts'
      */
-    resolve({
-        targetPath,
-        destinationSubpath = '',
-        preserveLastSourceDir = false,
-    }: ResolveOptions): string {
+    resolve(targetPath: string, params?: ResolveParams): string {
+        const destinationSubpath = params?.destinationSubpath ?? '';
+        const preserveLastSourceDir = params?.preserveLastSourceDir ?? false;
+
+        const isExplicitFile = this.isExplicitFileInSource(targetPath);
+        const shouldPreserve = preserveLastSourceDir && !isExplicitFile;
+
         for (const { parentPath, originalGlob } of this.resolvedSourcePatterns) {
             if (!targetPath.startsWith(parentPath)) continue;
 
             if (matchGlob(targetPath, originalGlob)) {
-                const finalSourceDir = preserveLastSourceDir
+                const finalSourceDir = shouldPreserve
                     ? join(destinationSubpath, parse(parentPath).base)
                     : destinationSubpath;
 
@@ -66,8 +68,19 @@ export default class DestinationResolver {
         );
     }
 
-    private getDestinationPath(basePath: string, parentPath: string, targetPath: string): string {
-        const storageRoot = join(this.destinationRoot, basePath);
+    private isExplicitFileInSource(targetPath: string): boolean {
+        return this.resolvedSourcePatterns.some(
+            pattern =>
+                pattern.originalGlob === targetPath && !this.isGlobPattern(pattern.originalGlob)
+        );
+    }
+
+    private isGlobPattern(path: string): boolean {
+        return isGlobPattern(path);
+    }
+
+    private getDestinationPath(subpath: string, parentPath: string, targetPath: string): string {
+        const storageRoot = join(this.destinationRoot, subpath);
         const relativePath = relative(parentPath, targetPath);
 
         return resolve(storageRoot, relativePath);

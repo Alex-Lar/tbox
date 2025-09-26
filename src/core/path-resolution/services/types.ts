@@ -8,8 +8,7 @@ export type ResolvedSourcePattern = {
     originalGlob: string;
 };
 
-export type ResolveOptions = {
-    targetPath: string;
-    basePath?: string;
-    includeSourceBase?: boolean;
+export type ResolveParams = {
+    destinationSubpath?: string;
+    preserveLastSourceDir?: boolean;
 };

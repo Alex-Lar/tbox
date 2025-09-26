@@ -1,7 +1,7 @@
 import { matchGlob } from '@shared/utils/pattern-matcher';
 import { join, normalize, parse, relative, resolve } from '@shared/utils/path';
-import { getParentPathFromGlobString } from '@shared/utils/glob';
-import { ResolvedSourcePattern, ResolveOptions } from './types';
+import { getParentPathFromGlobString, isGlobPattern } from '@shared/utils/glob';
+import { ResolvedSourcePattern, ResolveParams } from './types';
 
 export default class DestinationResolver {
     private resolvedSourcePatterns: ResolvedSourcePattern[] = [];
@@ -18,7 +18,7 @@ export default class DestinationResolver {
      * Determines which source pattern matches the target path, then constructs
      * destination path by combining:
      * 1. destinationRoot
-     * 2. basePath
+     * 2. destinationSubpath
      * 3. Relative path from pattern's parent directory to target file
      *
      * Patterns are checked in descending order of specificity (longest parentPath first).
@@ -28,32 +28,38 @@ export default class DestinationResolver {
      * // - source: ['/projects/*.ts', '/projects/utils/**']
      * // - destinationRoot: '/var/storage'
      *
-     * // Without source base:
+     * // Without source final dir:
      * resolve({
      *   targetPath: '/projects/utils/helpers.ts',
-     *   basePath: 'backup',
-     *   includeSourceBase: false
+     *   destinationSubpath: 'backup',
+     *   preserveLastSourceDir: false
      * })
      * // -> '/var/storage/backup/helpers.ts'
      *
-     * // With source base:
+     * // With source final dir:
      * resolve({
      *   targetPath: '/projects/utils/helpers.ts',
-     *   basePath: 'backup',
-     *   includeSourceBase: true,
+     *   destinationSubpath: 'backup',
+     *   preserveLastSourceDir: true,
      * })
      * // -> '/var/storage/backup/utils/helpers.ts'
      */
-    resolve({ targetPath, basePath = '.', includeSourceBase = false }: ResolveOptions): string {
+    resolve(targetPath: string, params?: ResolveParams): string {
+        const destinationSubpath = params?.destinationSubpath ?? '';
+        const preserveLastSourceDir = params?.preserveLastSourceDir ?? false;
+
+        const isExplicitFile = this.isExplicitFileInSource(targetPath);
+        const shouldPreserve = preserveLastSourceDir && !isExplicitFile;
+
         for (const { parentPath, originalGlob } of this.resolvedSourcePatterns) {
             if (!targetPath.startsWith(parentPath)) continue;
 
             if (matchGlob(targetPath, originalGlob)) {
-                const finalBasePath = includeSourceBase
-                    ? join(basePath, parse(parentPath).base)
-                    : basePath;
+                const finalSourceDir = shouldPreserve
+                    ? join(destinationSubpath, parse(parentPath).base)
+                    : destinationSubpath;
 
-                return this.getDestinationPath(finalBasePath, parentPath, targetPath);
+                return this.getDestinationPath(finalSourceDir, parentPath, targetPath);
             }
         }
 
@@ -62,8 +68,19 @@ export default class DestinationResolver {
         );
     }
 
-    private getDestinationPath(basePath: string, parentPath: string, targetPath: string): string {
-        const storageRoot = join(this.destinationRoot, basePath);
+    private isExplicitFileInSource(targetPath: string): boolean {
+        return this.resolvedSourcePatterns.some(
+            pattern =>
+                pattern.originalGlob === targetPath && !this.isGlobPattern(pattern.originalGlob)
+        );
+    }
+
+    private isGlobPattern(path: string): boolean {
+        return isGlobPattern(path);
+    }
+
+    private getDestinationPath(subpath: string, parentPath: string, targetPath: string): string {
+        const storageRoot = join(this.destinationRoot, subpath);
         const relativePath = relative(parentPath, targetPath);
 
         return resolve(storageRoot, relativePath);
@@ -87,4 +104,3 @@ export default class DestinationResolver {
         );
     }
 }
-

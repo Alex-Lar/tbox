@@ -11,7 +11,7 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
 
 describe('DestinationResolver', () => {
     describe('resolve()', () => {
-        const destination = '/root/.local/share/tb';
+        const destination = '/dest';
 
         beforeEach(() => {
             vi.clearAllMocks();
@@ -19,23 +19,22 @@ describe('DestinationResolver', () => {
             vi.spyOn(process, 'cwd').mockImplementation(() => '/root');
         });
 
-        it('Should resolve target path correctly with one source', () => {
+        it('Should resolve single target path for glob pattern source', () => {
             vi.spyOn(process, 'cwd').mockImplementation(() => '/root');
             const source = ['./project/**'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPath = '/root/project/dir';
 
-            const result = new DestinationResolver(source, destination).resolve({
+            const result = new DestinationResolver(source, destination).resolve(targetPath, {
                 destinationSubpath,
-                targetPath,
             });
 
             expect(result).toBe(join(destination, destinationSubpath, 'dir'));
         });
 
-        it('Should resolve many target paths correctly with one source', () => {
+        it('Should resolve multiple target paths for single glob pattern source', () => {
             const source = ['./project/**'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPaths = [
                 '/root/project/dir',
                 '/root/project/nested/dir',
@@ -45,7 +44,7 @@ describe('DestinationResolver', () => {
             const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
-                return resolver.resolve({ destinationSubpath, targetPath });
+                return resolver.resolve(targetPath, { destinationSubpath });
             });
 
             expect(result).toEqual([
@@ -56,9 +55,9 @@ describe('DestinationResolver', () => {
             ]);
         });
 
-        it('Should resolve many target paths correctly with many source paths', () => {
+        it('Should resolve paths correctly for multiple source patterns', () => {
             const source = ['./project/**', './documents/*', './some/stuff/**/*'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPaths = [
                 '/root/project/dir',
                 '/root/project/another/dir/that/is/very/nested',
@@ -68,7 +67,7 @@ describe('DestinationResolver', () => {
             const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
-                return resolver.resolve({ destinationSubpath, targetPath });
+                return resolver.resolve(targetPath, { destinationSubpath });
             });
 
             expect(result).toEqual([
@@ -79,24 +78,23 @@ describe('DestinationResolver', () => {
             ]);
         });
 
-        it('Should resolve target path correctly with includeSourceBase flag set to true', () => {
+        it('Should preserve last source subpath directory when preserveLastSourceDir is true', () => {
             const source = ['./project/**'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPath = '/root/project/dir';
             const resolver = new DestinationResolver(source, destination);
 
-            const result = resolver.resolve({
+            const result = resolver.resolve(targetPath, {
                 destinationSubpath,
-                targetPath,
                 preserveLastSourceDir: true,
             });
 
             expect(result).toBe(join(destination, destinationSubpath, 'project', 'dir'));
         });
 
-        it('Should resolve many target paths correctly with many source paths and with includeSourceBase flag set to true', () => {
+        it('Should preserve last directory for multiple sources with preserveLastSourceDir', () => {
             const source = ['./project/**', './documents/*', './some/stuff/**/*'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPaths = [
                 '/root/project/dir',
                 '/root/project/another/dir/that/is/very/nested',
@@ -106,9 +104,8 @@ describe('DestinationResolver', () => {
             const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
-                return resolver.resolve({
+                return resolver.resolve(targetPath, {
                     destinationSubpath,
-                    targetPath,
                     preserveLastSourceDir: true,
                 });
             });
@@ -121,9 +118,33 @@ describe('DestinationResolver', () => {
             ]);
         });
 
-        it('Should resolve many target paths correctly with colliding source paths and includeSourceBase flag set to true', () => {
+        it('Should handle explicit file sources differently that glob patterns with preserveLastSourceDir', () => {
+            const source = ['./last-dir/**', './last-dir/file.txt'];
+            const targetPaths = [
+                '/root/last-dir/file.txt', // from explicit file source
+                '/root/last-dir/nested/dir/file.txt', // from glob pattern
+                '/root/last-dir/documents/file.txt', // from flob pattern
+                '/root/last-dir/README.md', // from flob pattern
+            ];
+            const resolver = new DestinationResolver(source, destination);
+
+            const result = targetPaths.map(targetPath => {
+                return resolver.resolve(targetPath, {
+                    preserveLastSourceDir: true,
+                });
+            });
+
+            expect(result).toEqual([
+                join(destination, 'file.txt'),
+                join(destination, 'last-dir/nested/dir/file.txt'),
+                join(destination, 'last-dir/documents/file.txt'),
+                join(destination, 'last-dir/README.md'),
+            ]);
+        });
+
+        it('Should prioritize most specific pattern when multiple sources match with preserveLastSourceDir', () => {
             const source = ['./projects/**', './projects/utils/*', './projects/utils/helpers/**'];
-            const destinationSubpath = 'my-template';
+            const destinationSubpath = 'subpath';
             const targetPaths = [
                 '/root/projects/utils/helper.ts',
                 '/root/projects/utils/helpers/array.ts',
@@ -133,9 +154,8 @@ describe('DestinationResolver', () => {
             const resolver = new DestinationResolver(source, destination);
 
             const result = targetPaths.map(targetPath => {
-                return resolver.resolve({
+                return resolver.resolve(targetPath, {
                     destinationSubpath,
-                    targetPath,
                     preserveLastSourceDir: true,
                 });
             });

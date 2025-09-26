@@ -32,8 +32,8 @@ export default class TemplateEntryFactory implements Factory<TemplateEntry, Temp
         entries: FileSystemEntry[];
         source: string[];
         destination: string;
-        templateName: string;
-        options?: Pick<AddOptions, 'base'>;
+        templateName?: string;
+        options?: Pick<AddOptions, 'preserveLastDir'>;
     }): TemplateEntry[] {
         const destinationResolver = this.destResolverFactory.create({ source, destination });
         const templateEntries: TemplateEntry[] = [];
@@ -43,8 +43,8 @@ export default class TemplateEntryFactory implements Factory<TemplateEntry, Temp
 
             const entyDest = destinationResolver.resolve({
                 targetPath: entry.path,
-                basePath: templateName,
-                includeSourceBase: options?.base ?? false,
+                destinationSubpath: templateName ?? '',
+                preserveLastSourceDir: entry.isFile() ? false : (options?.preserveLastDir ?? false),
             });
 
             templateEntries.push(this.create({ entry, destination: entyDest }));

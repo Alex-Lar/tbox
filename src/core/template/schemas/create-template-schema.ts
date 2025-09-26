@@ -32,8 +32,8 @@ export default class CreateTemplateSchema extends TemplateSchema {
         return this.parse(TemplateSchema.BOOLEAN_SCHEMA, value, 'recursive');
     }
 
-    base(value: unknown = false): boolean {
-        return this.parse(TemplateSchema.BOOLEAN_SCHEMA, value, 'base');
+    preserveLastDir(value: unknown = false): boolean {
+        return this.parse(TemplateSchema.BOOLEAN_SCHEMA, value, 'preserveLastDir');
     }
 
     props(value: unknown = {}): CreateTemplateProps {
@@ -43,7 +43,7 @@ export default class CreateTemplateSchema extends TemplateSchema {
             templateName: this.templateName(value.templateName),
             source: this.source(value.source),
             options: {
-                base: this.base(value.options.base),
+                preserveLastDir: this.preserveLastDir(value.options.preserveLastDir),
                 exclude: this.exclude(value.options.exclude),
                 force: this.force(value.options.force),
                 recursive: this.recursive(value.options.recursive),

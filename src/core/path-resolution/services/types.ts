@@ -10,6 +10,6 @@ export type ResolvedSourcePattern = {
 
 export type ResolveOptions = {
     targetPath: string;
-    basePath?: string;
-    includeSourceBase?: boolean;
+    destinationSubpath?: string;
+    preserveLastSourceDir?: boolean;
 };

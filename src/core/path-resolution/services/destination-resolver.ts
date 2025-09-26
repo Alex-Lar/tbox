@@ -18,7 +18,7 @@ export default class DestinationResolver {
      * Determines which source pattern matches the target path, then constructs
      * destination path by combining:
      * 1. destinationRoot
-     * 2. basePath
+     * 2. destinationSubpath
      * 3. Relative path from pattern's parent directory to target file
      *
      * Patterns are checked in descending order of specificity (longest parentPath first).
@@ -28,32 +28,36 @@ export default class DestinationResolver {
      * // - source: ['/projects/*.ts', '/projects/utils/**']
      * // - destinationRoot: '/var/storage'
      *
-     * // Without source base:
+     * // Without source final dir:
      * resolve({
      *   targetPath: '/projects/utils/helpers.ts',
-     *   basePath: 'backup',
-     *   includeSourceBase: false
+     *   destinationSubpath: 'backup',
+     *   preserveLastSourceDir: false
      * })
      * // -> '/var/storage/backup/helpers.ts'
      *
-     * // With source base:
+     * // With source final dir:
      * resolve({
      *   targetPath: '/projects/utils/helpers.ts',
-     *   basePath: 'backup',
-     *   includeSourceBase: true,
+     *   destinationSubpath: 'backup',
+     *   preserveLastSourceDir: true,
      * })
      * // -> '/var/storage/backup/utils/helpers.ts'
      */
-    resolve({ targetPath, basePath = '.', includeSourceBase = false }: ResolveOptions): string {
+    resolve({
+        targetPath,
+        destinationSubpath = '',
+        preserveLastSourceDir = false,
+    }: ResolveOptions): string {
         for (const { parentPath, originalGlob } of this.resolvedSourcePatterns) {
             if (!targetPath.startsWith(parentPath)) continue;
 
             if (matchGlob(targetPath, originalGlob)) {
-                const finalBasePath = includeSourceBase
-                    ? join(basePath, parse(parentPath).base)
-                    : basePath;
+                const finalSourceDir = preserveLastSourceDir
+                    ? join(destinationSubpath, parse(parentPath).base)
+                    : destinationSubpath;
 
-                return this.getDestinationPath(finalBasePath, parentPath, targetPath);
+                return this.getDestinationPath(finalSourceDir, parentPath, targetPath);
             }
         }
 
@@ -87,4 +91,3 @@ export default class DestinationResolver {
         );
     }
 }
-

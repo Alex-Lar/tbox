@@ -1,9 +1,9 @@
 export type AddOptions = {
     /**
-     * Include source directory to template
+     * Include last directory from source path to template
      * @default false
      */
-    base: boolean;
+    preserveLastDir: boolean;
     /**
      * Ignore warnings and errors
      * @default false

@@ -62,7 +62,6 @@ export default class TemplateService {
 
         const templateEntries = this.templateEntryFactory.createMany({
             entries: fileSystemEntries,
-            templateName: '',
             source: [templatePath],
             destination,
         });

@@ -9,14 +9,14 @@ import TemplateRepository from '@core/template/repositories/index.ts';
 import TemplateService from '@core/template/services/index.ts';
 import FileSystemScanner from '@core/file-system/services/fs-scanner';
 
-import CreateTemplateOperation from '@core/template/operations/create-template-operation.ts';
+import SaveTemplateOperation from '@core/template/operations/save-template-operation';
 import GetTemplateOperation from '@core/template/operations/get-template-operation';
 import ListTemplateOperation from '@core/template/operations/list-template-operation';
-import RemoveTemplateOperation from '@core/template/operations/remove-template-operation';
+import DeleteTemplateOperation from '@core/template/operations/delete-template-operation';
 
-import CreateTemplateSchema from '@core/template/schemas/create-template-schema.ts';
+import SaveTemplateSchema from '@core/template/schemas/save-template-schema';
 import GetTemplateSchema from '@core/template/schemas/get-template-schema';
-import RemoveTemplateSchema from '@core/template/schemas/remove-template-schema';
+import DeleteTemplateSchema from '@core/template/schemas/delete-template-schema';
 
 import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
 
@@ -41,21 +41,21 @@ class TsyringeContainer {
 
     initCoreTemplate() {
         // Schema
-        this._container.registerSingleton(CreateTemplateSchema);
+        this._container.registerSingleton(SaveTemplateSchema);
         this._container.registerSingleton(GetTemplateSchema);
-        this._container.registerSingleton(RemoveTemplateSchema);
+        this._container.registerSingleton(DeleteTemplateSchema);
 
         // Operations
-        this._container.register('CreateTemplateOperation', {
-            useClass: CreateTemplateOperation,
+        this._container.register('SaveTemplateOperation', {
+            useClass: SaveTemplateOperation,
         });
 
         this._container.register('GetTemplateOperation', {
             useClass: GetTemplateOperation,
         });
 
-        this._container.register('RemoveTemplateOperation', {
-            useClass: RemoveTemplateOperation,
+        this._container.register('DeleteTemplateOperation', {
+            useClass: DeleteTemplateOperation,
         });
 
         this._container.register('ListTemplateOperation', {

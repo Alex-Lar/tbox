@@ -17,7 +17,7 @@
         "prepublishOnly": "npm run build",
         "type-check": "tsc --noEmit --project tsconfig.src.json",
         "test:unit": "vitest run --dir __tests__/unit",
-        "test:integration": "vitest run --dir __tests__/integration"
+        "test:int": "vitest run --dir __tests__/integration"
     },
     "keywords": [
         "cli",

@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "build": "npm run type-check && npm run build-tsup",
-        "build-tsup": "tsup",
+        "build:tsup": "tsup",
         "prepublishOnly": "npm run build",
         "type-check": "tsc --noEmit --project tsconfig.src.json",
         "test:unit": "vitest run --dir __tests__/unit",

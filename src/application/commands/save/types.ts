@@ -1,4 +1,4 @@
-export type AddOptions = {
+export type SaveOptions = {
     /**
      * Include last directory from source path to template
      * @default false

@@ -1,10 +1,10 @@
-import { AddOptions } from '@application/commands/create';
+import { SaveOptions } from '@application/commands/save';
 
-export const mockCreateTemplateProps = (
+export const mockSaveTemplateProps = (
     props?: Partial<{
         templateName: string;
         source: string[];
-        options: Partial<AddOptions>;
+        options: Partial<SaveOptions>;
     }>
 ) => {
     return {
@@ -19,7 +19,7 @@ export const mockCreateTemplateProps = (
     };
 };
 
-export const mockAddOptions = (options?: Partial<AddOptions>) => {
+export const mockSaveOptions = (options?: Partial<SaveOptions>) => {
     const defaultOptions = {
         preserveLastDir: false,
         force: false,

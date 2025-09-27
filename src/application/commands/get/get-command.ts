@@ -6,12 +6,14 @@ export default function buildGetCommand() {
     return new Command('get')
         .argument('<template-name>', 'template name')
         .argument('[destination]', 'destination for template extraction', process.cwd())
-        .action(async (templateName: string, destination: string) => {
-            const operation = container.resolve<GetTemplateOperation>('GetTemplateOperation');
+        .action(getCommandHandler);
+}
 
-            await operation.execute({
-                templateName,
-                destination,
-            });
-        });
+export async function getCommandHandler(templateName: string, destination: string) {
+    const operation = container.resolve<GetTemplateOperation>('GetTemplateOperation');
+
+    await operation.execute({
+        templateName,
+        destination,
+    });
 }

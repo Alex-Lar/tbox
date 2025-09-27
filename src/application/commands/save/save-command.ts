@@ -1,11 +1,11 @@
 import { Command } from 'commander';
-import { AddOptions } from '@application/commands/create/index.ts';
 import container from '@infrastructure/container/di-container.ts';
-import CreateTemplateOperation from '@core/template/operations/create-template-operation.ts';
+import SaveTemplateOperation from '@core/template/operations/save-template-operation';
+import { SaveOptions } from './types';
 
-export default function buildCreateCommand() {
-    return new Command('create')
-        .alias('new')
+export default function buildSaveCommand() {
+    return new Command('save')
+        .alias('s')
         .argument('<template-name>', 'unique template identifier')
         .argument('<source...>', 'sources to save as template')
         .option('-f, --force', 'ignore warnings and errors', false)
@@ -30,8 +30,8 @@ Examples for --exclude option:
   ./config.json   - exclude only the root config.json file
 `
         )
-        .action(async (templateName: string, source: string[], options: AddOptions) => {
-            const operation = container.resolve<CreateTemplateOperation>('CreateTemplateOperation');
+        .action(async (templateName: string, source: string[], options: SaveOptions) => {
+            const operation = container.resolve<SaveTemplateOperation>('SaveTemplateOperation');
 
             await operation.execute({
                 templateName,

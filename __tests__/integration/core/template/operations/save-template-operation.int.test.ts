@@ -1,15 +1,14 @@
 import 'reflect-metadata';
-import CreateTemplateOperation from '@core/template/operations/create-template-operation';
+import SaveTemplateOperation from '@core/template/operations/save-template-operation';
 import { beforeEach, describe, expect, vi, it } from 'vitest';
 import container from '@infrastructure/container/di-container';
 import { getSimpleStructureFixture } from '__tests__/fixtures/simple-structure';
 import FastGlob from 'fast-glob';
-import { getFastGlobStreamMock } from '__tests__/helpers';
+import { getFastGlobStreamMock, mockSaveOptions } from '__tests__/helpers';
 import { fs, vol } from 'memfs';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path';
 import { resolve } from 'node:path';
 import { StubLoaderService } from '@infrastructure/loader/stub-loader-service';
-import { mockAddOptions } from '__tests__/helpers/template';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
@@ -25,8 +24,8 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
 // 	- test force flag
 // 	- test invalid input
 
-describe('CreateTemplateOperation Integration Suite', () => {
-    let operation: CreateTemplateOperation;
+describe('SaveTemplateOperation Integration Suite', () => {
+    let operation: SaveTemplateOperation;
 
     const templateName = 'test-template';
     const fixture = getSimpleStructureFixture({ isTemplate: false, templateName });
@@ -39,7 +38,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        operation = container.resolve<CreateTemplateOperation>('CreateTemplateOperation');
+        operation = container.resolve<SaveTemplateOperation>('SaveTemplateOperation');
 
         vol.reset();
         vol.fromJSON(fixture.memfsStructure, fixture.memfsCwd);
@@ -56,7 +55,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             const input = {
                 templateName,
                 source: ['./project/**'],
-                options: mockAddOptions(),
+                options: mockSaveOptions(),
             };
 
             await expect(operation.execute(input)).resolves.toBeUndefined();
@@ -83,7 +82,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             const input = {
                 templateName,
                 source: ['./project/**'],
-                options: mockAddOptions({ force: true }),
+                options: mockSaveOptions({ force: true }),
             };
 
             await expect(operation.execute(input)).resolves.toBeUndefined();
@@ -103,7 +102,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             const input = {
                 templateName,
                 source: ['./project'],
-                options: mockAddOptions({ recursive: true }),
+                options: mockSaveOptions({ recursive: true }),
             };
 
             await expect(operation.execute(input)).resolves.toBeUndefined();
@@ -123,7 +122,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             const input = {
                 templateName,
                 source: ['./project/**', './project/index.html'],
-                options: mockAddOptions({ preserveLastDir: true }),
+                options: mockSaveOptions({ preserveLastDir: true }),
             };
 
             await expect(operation.execute(input)).resolves.toBeUndefined();
@@ -148,7 +147,7 @@ describe('CreateTemplateOperation Integration Suite', () => {
             const input = {
                 templateName,
                 source: ['./project/**'],
-                options: mockAddOptions({ preserveLastDir: true }),
+                options: mockSaveOptions({ preserveLastDir: true }),
             };
 
             await expect(operation.execute(input)).resolves.toBeUndefined();

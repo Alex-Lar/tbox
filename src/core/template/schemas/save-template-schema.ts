@@ -1,17 +1,17 @@
 import { singleton } from 'tsyringe';
-import { CreateTemplateProps } from '../operations/types';
+import { SaveTemplateProps } from '../operations/types';
 import TemplateSchema from './template-schema';
 
-function isCreateTemplateProps(value: unknown): value is CreateTemplateProps {
+function isSaveTemplateProps(value: unknown): value is SaveTemplateProps {
     return (
-        Array.isArray((value as CreateTemplateProps).source) &&
-        typeof (value as CreateTemplateProps).templateName === 'string' &&
-        typeof (value as CreateTemplateProps).options === 'object'
+        Array.isArray((value as SaveTemplateProps).source) &&
+        typeof (value as SaveTemplateProps).templateName === 'string' &&
+        typeof (value as SaveTemplateProps).options === 'object'
     );
 }
 
 @singleton()
-export default class CreateTemplateSchema extends TemplateSchema {
+export default class SaveTemplateSchema extends TemplateSchema {
     templateName(value: unknown): string {
         return this.parse(TemplateSchema.NAME_SCHEMA, value, 'template-name');
     }
@@ -36,8 +36,8 @@ export default class CreateTemplateSchema extends TemplateSchema {
         return this.parse(TemplateSchema.BOOLEAN_SCHEMA, value, 'preserveLastDir');
     }
 
-    props(value: unknown = {}): CreateTemplateProps {
-        if (!isCreateTemplateProps(value)) throw new Error('Invalid command arguments');
+    props(value: unknown = {}): SaveTemplateProps {
+        if (!isSaveTemplateProps(value)) throw new Error('Invalid command arguments');
 
         return {
             templateName: this.templateName(value.templateName),

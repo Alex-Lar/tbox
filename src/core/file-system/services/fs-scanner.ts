@@ -51,7 +51,7 @@ export default class FileSystemScanner {
 
         try {
             let fileCount = 0;
-            this.loader.start('Preparing...');
+            this.loader.start('Scanning...');
 
             for await (const globEntry of globEntryGen) {
                 const fsEntry = this.fsEntryFactory.createFromGlobEntry(globEntry);
@@ -62,11 +62,11 @@ export default class FileSystemScanner {
                 }
             }
         } catch (error) {
-            this.loader.fail();
+            this.loader.fail('Scan failed');
             throw error;
         }
 
-        this.loader.succeed();
+        this.loader.succeed('Scan is completed!');
         return fsEntries;
     }
 }

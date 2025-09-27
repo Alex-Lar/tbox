@@ -1,1 +1,1 @@
-export const APP_NAME = 'tb' as const;
+export const APP_NAME = 'tbox' as const;

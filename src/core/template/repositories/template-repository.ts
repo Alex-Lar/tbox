@@ -1,8 +1,6 @@
 import { injectable, inject } from 'tsyringe';
-import type { AddOptions } from '@application/commands/create/index.ts';
 import Template from '../entities/template.ts';
-import { TemplateRepositoryInterface } from './types.ts';
-import TemplateCopier from '@infrastructure/file-system/template/template-copier.ts';
+import TemplateCopier from '@infrastructure/file-system/copier/template-copier.ts';
 import TemplateExistsError from '@shared/errors/template-exists.ts';
 import { generateTempDirName } from '@shared/utils/random.ts';
 import Transaction from '@shared/patterns/transaction.ts';
@@ -13,9 +11,10 @@ import { join } from '@shared/utils/path.ts';
 import { TemplateNotFoundError } from '@shared/errors/template-not-found.ts';
 import type { LoaderService } from '@shared/interfaces/loader-service.ts';
 import { important } from '@shared/utils/style.ts';
+import { SaveOptions } from '@application/commands/save/types.ts';
 
 @injectable()
-export default class TemplateRepository implements TemplateRepositoryInterface {
+export default class TemplateRepository {
     constructor(
         @inject('LoaderService')
         private loader: LoaderService
@@ -24,7 +23,7 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
     /**
      * @throws {TemplateExistsError} if the force flag is false and the template already exists.
      */
-    async save(template: Template, options: AddOptions): Promise<void> {
+    async save(template: Template, options: SaveOptions): Promise<void> {
         const templateStorage = template.destination;
         const templateAlreadyExists = existsSync(templateStorage);
 
@@ -65,6 +64,8 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
     }
 
     async copy(template: Template): Promise<void> {
+        if (!template.entries.length) throw new TemplateNotFoundError(template.name);
+
         const execute = async () => {
             this.loader.start('Extracting...');
             await TemplateCopier.copyTemplate(template);
@@ -95,18 +96,18 @@ export default class TemplateRepository implements TemplateRepositoryInterface {
         }
 
         try {
-            this.loader.start(`Removing ${important(templateName)}...`);
+            this.loader.start(`Deleting ${important(templateName)}...`);
 
             await remove(templatePath);
         } catch (error) {
-            this.loader.fail('Removal failed!');
+            this.loader.fail('Deletion failed!');
 
             throw new Error(`Error occurred while deleting template: ${templateName}`, {
                 cause: error,
             });
         }
 
-        this.loader.succeed(`Template ${important(templateName)} is removed!`);
+        this.loader.succeed(`Template ${important(templateName)} has been successfully deleted!`);
     }
 
     async list(): Promise<string[]> {

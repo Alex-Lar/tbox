@@ -3,9 +3,9 @@ import { inject, injectable } from 'tsyringe';
 import TemplateRepository from '@core/template/repositories/template-repository.ts';
 import TemplateFactory from '@core/template/entities/template-factory.ts';
 import type {
-    CreateTemplateProps,
+    SaveTemplateProps,
     GetTemplateProps,
-    RemoveTemplateProps,
+    DeleteTemplateProps,
 } from '@core/template/operations/types.ts';
 import TemplateEntryFactory from '@core/template/entities/template-entry-factory.ts';
 
@@ -30,7 +30,7 @@ export default class TemplateService {
         private templateEntryFactory: TemplateEntryFactory
     ) {}
 
-    async create({ templateName, source, options }: CreateTemplateProps) {
+    async save({ templateName, source, options }: SaveTemplateProps) {
         const fileSystemEntries = await this.fileSystemScanner.scan(source, {
             exclude: options.exclude,
         });
@@ -73,10 +73,28 @@ export default class TemplateService {
             destination,
         });
 
-        await this.templateRepository.copy(template);
+        try {
+            await this.templateRepository.copy(template);
+        } catch (error) {
+            if (error instanceof TemplateNotFoundError) {
+                console.log('');
+                console.log(warning('┌────────────────────────────────────────┐'));
+                console.log(warning('│           Template not found           │'));
+                console.log(warning('└────────────────────────────────────────┘'));
+                console.log('');
+                console.log('Template: ' + important(`${templateName}`));
+                console.log('');
+                console.log('Solutions:');
+                console.log(error.solution);
+                console.log('');
+                return;
+            }
+
+            throw error;
+        }
     }
 
-    async remove({ templateName }: RemoveTemplateProps): Promise<void> {
+    async delete({ templateName }: DeleteTemplateProps): Promise<void> {
         try {
             await this.templateRepository.delete(templateName);
         } catch (error) {
@@ -109,7 +127,7 @@ export default class TemplateService {
             console.log('');
             console.log('To get started:');
             console.log(
-                `  ${BULLET_SYMBOL} Run \`` + info(`${APP_NAME} create`) + '` to add a new template'
+                `  ${BULLET_SYMBOL} Run \`` + info(`${APP_NAME} save`) + '` to add a new template'
             );
             console.log('');
             return;

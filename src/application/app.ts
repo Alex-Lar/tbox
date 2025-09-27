@@ -1,10 +1,10 @@
 import { program } from 'commander';
 import { APP_NAME } from '@shared/constants/app.ts';
 import {
-    buildCreateCommand,
+    buildSaveCommand,
     buildGetCommand,
     buildListCommand,
-    buildRemoveCommand,
+    buildDeleteCommand,
 } from '@application/commands';
 
 class Application {
@@ -14,9 +14,9 @@ class Application {
         program.name(APP_NAME).description('CLI for saving and reusing file/directory templates');
 
         program
-            .addCommand(buildCreateCommand())
+            .addCommand(buildSaveCommand())
+            .addCommand(buildDeleteCommand())
             .addCommand(buildGetCommand())
-            .addCommand(buildRemoveCommand())
             .addCommand(buildListCommand());
 
         await program.parseAsync();

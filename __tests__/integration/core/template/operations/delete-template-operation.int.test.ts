@@ -4,7 +4,7 @@ import container from '@infrastructure/container/di-container';
 import { getSimpleStructureFixture } from '__tests__/fixtures/simple-structure';
 import { fs, vol } from 'memfs';
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path';
-import RemoveTemplateOperation from '@core/template/operations/remove-template-operation';
+import DeleteTemplateOperation from '@core/template/operations/delete-template-operation';
 import { join } from 'node:path';
 import { StubLoaderService } from '@infrastructure/loader/stub-loader-service';
 
@@ -24,8 +24,8 @@ vi.mock('@infrastructure/file-system/paths/get-path', () => {
     };
 });
 
-describe('RemoveTemplateOperation Integration Suite', () => {
-    let operation: RemoveTemplateOperation;
+describe('DeleteTemplateOperation Integration Suite', () => {
+    let operation: DeleteTemplateOperation;
 
     container.register('LoaderService', {
         useValue: new StubLoaderService(),
@@ -33,7 +33,7 @@ describe('RemoveTemplateOperation Integration Suite', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        operation = container.resolve<RemoveTemplateOperation>('RemoveTemplateOperation');
+        operation = container.resolve<DeleteTemplateOperation>('DeleteTemplateOperation');
     });
 
     describe('Simple structure', () => {
@@ -61,7 +61,7 @@ describe('RemoveTemplateOperation Integration Suite', () => {
             consoleSpy.mockRestore();
         });
 
-        it('should successfully remove existing template', async () => {
+        it('should successfully delete existing template', async () => {
             const input = { templateName };
             const templatePath = join(storagePath, input.templateName);
             const templateExitsBeforeAct = fs.existsSync(templatePath);

@@ -3,8 +3,8 @@ import TemplateEntry from '@core/template/entities/template-entry.ts';
 
 import type { Factory } from '@shared/interfaces/factory';
 import { FileSystemEntry } from '@core/file-system/entities';
-import { AddOptions } from '@application/commands/create';
 import DestinationResolverFactory from '@core/path-resolution/services/destination-resolver-factory';
+import { SaveOptions } from '@application/commands/save';
 
 interface TemplateEntryProps {
     entry: FileSystemEntry;
@@ -33,7 +33,7 @@ export default class TemplateEntryFactory implements Factory<TemplateEntry, Temp
         source: string[];
         destination: string;
         templateName?: string;
-        options?: Pick<AddOptions, 'preserveLastDir'>;
+        options?: Pick<SaveOptions, 'preserveLastDir'>;
     }): TemplateEntry[] {
         const destinationResolver = this.destResolverFactory.create({ source, destination });
         const templateEntries: TemplateEntry[] = [];

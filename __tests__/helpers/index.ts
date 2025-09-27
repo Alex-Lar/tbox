@@ -6,7 +6,7 @@ import {
     mockDirentFile,
     mockGlobEntryStream,
 } from '__tests__/helpers/file-system';
-import { mockCreateTemplateProps } from '__tests__/helpers/template';
+import { mockSaveOptions, mockSaveTemplateProps } from '__tests__/helpers/template';
 import { createMemfsStructureFromPaths } from './memfs';
 
 export {
@@ -18,5 +18,6 @@ export {
     mockDirentDir,
     mockDirentFile,
     mockGlobEntryStream,
-    mockCreateTemplateProps,
+    mockSaveTemplateProps,
+    mockSaveOptions,
 };

@@ -1,10 +1,10 @@
-import { CreateTemplateProps } from '@core/template/operations/types';
+import { SaveTemplateProps } from '@core/template/operations/types';
 import { isDirSync } from '@shared/utils/file-system';
 import { isGlobPattern } from '@shared/utils/glob';
 import { join, normalize } from '@shared/utils/path';
 
-export class CreateTemplatePropsPreparer {
-    static prepare(props: CreateTemplateProps): CreateTemplateProps {
+export class SaveTemplatePropsPreparer {
+    static prepare(props: SaveTemplateProps): SaveTemplateProps {
         const { options, source } = props;
 
         if (options.exclude.length) {

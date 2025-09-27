@@ -1,13 +1,13 @@
-import { AddOptions } from '@application/commands/create/index.ts';
+import { SaveOptions } from '@application/commands/save';
 
 export interface Operation<T = undefined> {
     execute(params: T): Promise<void>;
 }
 
-export type CreateTemplateProps = {
+export type SaveTemplateProps = {
     templateName: string;
     source: string[];
-    options: AddOptions;
+    options: SaveOptions;
 };
 
 export type GetTemplateProps = {
@@ -15,6 +15,6 @@ export type GetTemplateProps = {
     destination: string;
 };
 
-export type RemoveTemplateProps = {
+export type DeleteTemplateProps = {
     templateName: string;
 };

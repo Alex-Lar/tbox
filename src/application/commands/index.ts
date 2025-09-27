@@ -1,6 +1,6 @@
-import buildCreateCommand from './create';
+import buildSaveCommand from './save';
 import buildGetCommand from './get';
 import buildListCommand from './list';
-import buildRemoveCommand from './remove';
+import buildDeleteCommand from './delete';
 
-export { buildCreateCommand, buildGetCommand, buildListCommand, buildRemoveCommand };
+export { buildSaveCommand, buildGetCommand, buildListCommand, buildDeleteCommand };

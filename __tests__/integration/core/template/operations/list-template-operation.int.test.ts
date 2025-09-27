@@ -22,7 +22,7 @@ vi.mock('@shared/constants', () => ({
     TREE_BRANCH: '├─',
     TREE_END: '└─',
     BULLET_SYMBOL: '•',
-    APP_NAME: 'tb',
+    APP_NAME: 'tbox',
 }));
 
 vi.mock('@infrastructure/file-system/paths/get-path', () => {
@@ -85,7 +85,7 @@ describe('ListTemplateOperation Integration Suite', () => {
             expect(consoleSpy).toHaveBeenCalledWith('└────────────────────────────────────────┘');
             expect(consoleSpy).toHaveBeenCalledWith('');
             expect(consoleSpy).toHaveBeenCalledWith('To get started:');
-            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tb create` to add a new template');
+            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tbox save` to add a new template');
             expect(consoleSpy).toHaveBeenCalledWith('');
         });
 
@@ -107,7 +107,7 @@ describe('ListTemplateOperation Integration Suite', () => {
             expect(consoleSpy).toHaveBeenCalledWith('└────────────────────────────────────────┘');
             expect(consoleSpy).toHaveBeenCalledWith('');
             expect(consoleSpy).toHaveBeenCalledWith('To get started:');
-            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tb create` to add a new template');
+            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tbox save` to add a new template');
             expect(consoleSpy).toHaveBeenCalledWith('');
         });
 

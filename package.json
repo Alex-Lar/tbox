@@ -24,6 +24,10 @@
         "cli",
         "templates"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Alex-Lar/tbox.git"
+    },
     "author": "Alexander Larin",
     "license": "MIT",
     "devDependencies": {

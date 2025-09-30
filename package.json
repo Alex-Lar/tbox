@@ -16,6 +16,7 @@
         "build:tsup": "tsup",
         "prepublishOnly": "npm run build",
         "type-check": "tsc --noEmit --project tsconfig.src.json",
+        "test": "vitest run --dir __tests__",
         "test:unit": "vitest run --dir __tests__/unit",
         "test:int": "vitest run --dir __tests__/integration"
     },

@@ -1,6 +1,6 @@
 {
     "name": "@alexlar/tbox",
-    "version": "0.0.1-next.1",
+    "version": "0.1.0",
     "description": "CLI tool for managing file/directory templates",
     "main": "./dist/index.mjs",
     "type": "module",

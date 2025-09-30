@@ -1,10 +1,6 @@
 import PrettyError from '@shared/interfaces/pretty-error.ts';
-import {
-    BULLET_SYMBOL,
-    ANGLE_QUOTE_SYMBOL,
-    INFO_SYMBOL,
-    ERROR_SYMBOL,
-} from '../constants/symbols.ts';
+import { BULLET_SYMBOL, ANGLE_QUOTE_SYMBOL, ERROR_SYMBOL } from '../constants/symbols.ts';
+import Logger from '@shared/utils/logger.ts';
 
 export class FileSystemOperationError extends Error implements PrettyError {
     static readonly OPERATIONS = {
@@ -48,8 +44,12 @@ export class FileSystemOperationError extends Error implements PrettyError {
                 '\n'
         );
 
-        parts.push(`${INFO_SYMBOL} Solutions:\n${this.solution}`);
+        parts.push(`Solutions:\n${this.solution}`);
 
         return parts.join('\n');
+    }
+
+    print(): void {
+        Logger.log(this.formatForDisplay());
     }
 }

@@ -1,12 +1,14 @@
 import PrettyError from '@shared/interfaces/pretty-error.ts';
-import { BULLET_SYMBOL, INFO_SYMBOL } from '../constants/symbols.ts';
+import { BULLET_SYMBOL } from '../constants/symbols.ts';
+import Logger from '@shared/utils/logger.ts';
+import { important, info } from '@shared/utils/style.ts';
 
 export class TemplateNotFoundError extends Error implements PrettyError {
     readonly solution: string;
     readonly templateName: string;
 
     constructor(templateName: string) {
-        super(`Template not found: ${templateName}`);
+        super(`Template not found: ${important(templateName)}`);
 
         this.name = 'TemplateNotFoundError';
         this.templateName = templateName;
@@ -14,10 +16,14 @@ export class TemplateNotFoundError extends Error implements PrettyError {
     }
 
     private generateSolution(): string {
-        return [`  ${BULLET_SYMBOL} Verify template name with list command`].join('\n');
+        return [`  ${BULLET_SYMBOL} Verify template name with ${info('list')} command`].join('\n');
     }
 
     formatForDisplay(): string {
-        return `${this.message}\n\n${INFO_SYMBOL} Solutions:\n${this.solution}`;
+        return `${this.message}\n\n${info('Solution:')}\n${this.solution}`;
+    }
+
+    print(): void {
+        Logger.warn(this.formatForDisplay());
     }
 }

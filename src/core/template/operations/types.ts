@@ -16,5 +16,5 @@ export type GetTemplateProps = {
 };
 
 export type DeleteTemplateProps = {
-    templateName: string;
+    templateNames: string[];
 };

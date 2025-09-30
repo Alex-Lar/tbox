@@ -13,9 +13,10 @@ import FileSystemScanner from '@core/file-system/services/fs-scanner';
 
 import { getStoragePath } from '@infrastructure/file-system/paths/get-path.ts';
 import { join } from '@shared/utils/path';
-import { dim, important, info, warning } from '@shared/utils/style';
-import { APP_NAME, BULLET_SYMBOL, TREE_BRANCH, TREE_END } from '@shared/constants';
-import { TemplateNotFoundError } from '@shared/errors';
+import { dim, important } from '@shared/utils/style';
+import { TREE_BRANCH, TREE_END } from '@shared/constants';
+import { existsSync } from '@shared/utils/file-system';
+import TemplateExistsError from '@shared/errors/template-exists';
 
 @injectable()
 export default class TemplateService {
@@ -23,7 +24,7 @@ export default class TemplateService {
         @inject('FileSystemScanner')
         private fileSystemScanner: FileSystemScanner,
         @inject('TemplateRepository')
-        private templateRepository: TemplateRepository,
+        private repo: TemplateRepository,
         @inject('TemplateFactory')
         private templateFactory: TemplateFactory,
         @inject('TemplateEntryFactory')
@@ -31,6 +32,12 @@ export default class TemplateService {
     ) {}
 
     async save({ templateName, source, options }: SaveTemplateProps) {
+        const templatePath = join(getStoragePath(), templateName);
+
+        if (existsSync(templatePath) && !options.force) {
+            throw new TemplateExistsError(templateName);
+        }
+
         const fileSystemEntries = await this.fileSystemScanner.scan(source, {
             exclude: options.exclude,
         });
@@ -52,7 +59,7 @@ export default class TemplateService {
             name: templateName,
         });
 
-        await this.templateRepository.save(template, options);
+        await this.repo.save(template, options);
     }
 
     async get({ templateName, destination }: GetTemplateProps) {
@@ -73,65 +80,15 @@ export default class TemplateService {
             destination,
         });
 
-        try {
-            await this.templateRepository.copy(template);
-        } catch (error) {
-            if (error instanceof TemplateNotFoundError) {
-                console.log('');
-                console.log(warning('┌────────────────────────────────────────┐'));
-                console.log(warning('│           Template not found           │'));
-                console.log(warning('└────────────────────────────────────────┘'));
-                console.log('');
-                console.log('Template: ' + important(`${templateName}`));
-                console.log('');
-                console.log('Solutions:');
-                console.log(error.solution);
-                console.log('');
-                return;
-            }
-
-            throw error;
-        }
+        await this.repo.copy(template);
     }
 
-    async delete({ templateName }: DeleteTemplateProps): Promise<void> {
-        try {
-            await this.templateRepository.delete(templateName);
-        } catch (error) {
-            if (error instanceof TemplateNotFoundError) {
-                console.log('');
-                console.log(warning('┌────────────────────────────────────────┐'));
-                console.log(warning('│           Template not found           │'));
-                console.log(warning('└────────────────────────────────────────┘'));
-                console.log('');
-                console.log('Template: ' + important(`${templateName}`));
-                console.log('');
-                console.log('Solutions:');
-                console.log(error.solution);
-                console.log('');
-                return;
-            }
-
-            throw error;
-        }
+    async delete({ templateNames }: DeleteTemplateProps): Promise<void> {
+        await this.repo.deleteMany(templateNames);
     }
 
     async list(): Promise<void> {
-        const templateNames = await this.templateRepository.list();
-
-        if (!templateNames || !templateNames.length) {
-            console.log('');
-            console.log(warning('┌────────────────────────────────────────┐'));
-            console.log(warning('│           No templates found           │'));
-            console.log(warning('└────────────────────────────────────────┘'));
-            console.log('');
-            console.log('To get started:');
-            console.log(
-                `  ${BULLET_SYMBOL} Run \`` + info(`${APP_NAME} save`) + '` to add a new template'
-            );
-            console.log('');
-            return;
-        }
+        const templateNames = await this.repo.list();
 
         console.log(dim(`Total templates: ${templateNames.length}`));
 

@@ -5,10 +5,10 @@ import DeleteTemplateOperation from '@core/template/operations/delete-template-o
 export default function buildDeleteCommand() {
     return new Command('delete')
         .alias('del')
-        .argument('<template-name>', 'unique template identifier')
-        .action(async (templateName: string) => {
+        .argument('<template-name...>', 'unique template identifier')
+        .action(async (templateNames: string[]) => {
             const operation = container.resolve<DeleteTemplateOperation>('DeleteTemplateOperation');
 
-            await operation.execute({ templateName });
+            await operation.execute({ templateNames });
         });
 }

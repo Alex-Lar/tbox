@@ -1,22 +1,23 @@
 import PrettyError from '@shared/interfaces/pretty-error.ts';
 import { BULLET_SYMBOL } from '../constants/symbols.ts';
+import { APP_NAME } from '@shared/constants/app.ts';
+import { info } from '@shared/utils/style.ts';
 import Logger from '@shared/utils/logger.ts';
-import { important, info } from '@shared/utils/style.ts';
 
-export class TemplateNotFoundError extends Error implements PrettyError {
+export class NoTemplatesFoundError extends Error implements PrettyError {
     readonly solution: string;
-    readonly templateName: string;
 
-    constructor(templateName: string) {
-        super(`Template not found: ${important(templateName)}`);
+    constructor() {
+        super(`No templates found`);
 
-        this.name = 'TemplateNotFoundError';
-        this.templateName = templateName;
+        this.name = 'NoTemplatesFoundError';
         this.solution = this.generateSolution();
     }
 
     private generateSolution(): string {
-        return [`  ${BULLET_SYMBOL} Verify template name with ${info('list')} command`].join('\n');
+        return [
+            `  ${BULLET_SYMBOL} Run ` + info(`${APP_NAME} save`) + ' to add a new template',
+        ].join('\n');
     }
 
     formatForDisplay(): string {

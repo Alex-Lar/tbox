@@ -7,11 +7,16 @@ import path from 'node:path';
 import ListTemplateOperation from '@core/template/operations/list-template-operation';
 import { TREE_BRANCH, TREE_END } from '@shared/constants';
 import { createMemfsStructureFromPaths } from '__tests__/helpers';
+import { NoTemplatesFoundError } from '@shared/errors/no-templates-found';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 
+vi.mock('@shared/utils/logger');
+
 vi.mock('@shared/utils/style', () => ({
+    success: (str: string) => str,
+    error: (str: string) => str,
     dim: (str: string) => str,
     info: (str: string) => str,
     warning: (str: string) => str,
@@ -19,6 +24,10 @@ vi.mock('@shared/utils/style', () => ({
 }));
 
 vi.mock('@shared/constants', () => ({
+    SUCCESS_SYMBOL: '✔',
+    ERROR_SYMBOL: '✖',
+    WARN_SYMBOL: '⚠',
+    INFO_SYMBOL: 'ℹ',
     TREE_BRANCH: '├─',
     TREE_END: '└─',
     BULLET_SYMBOL: '•',
@@ -74,45 +83,27 @@ describe('ListTemplateOperation Integration Suite', () => {
             expect(output).toMatch(TREE_END);
         });
 
-        it('should display appropriate message when no templates found', async () => {
+        it('should throw NoTemplatesFoundError when no templates found', async () => {
             vol.mkdirSync(storagePath, { recursive: true });
 
-            await expect(operation.execute()).resolves.toBeUndefined();
-
-            expect(consoleSpy).toHaveBeenCalledWith('');
-            expect(consoleSpy).toHaveBeenCalledWith('┌────────────────────────────────────────┐');
-            expect(consoleSpy).toHaveBeenCalledWith('│           No templates found           │');
-            expect(consoleSpy).toHaveBeenCalledWith('└────────────────────────────────────────┘');
-            expect(consoleSpy).toHaveBeenCalledWith('');
-            expect(consoleSpy).toHaveBeenCalledWith('To get started:');
-            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tbox save` to add a new template');
-            expect(consoleSpy).toHaveBeenCalledWith('');
+            await expect(() => operation.execute()).rejects.toThrow(NoTemplatesFoundError);
         });
 
         it('should not display template list when no templates found', async () => {
             vol.mkdirSync(storagePath, { recursive: true });
 
-            await expect(operation.execute()).resolves.toBeUndefined();
+            await expect(() => operation.execute()).rejects.toThrow(NoTemplatesFoundError);
 
             const output = consoleSpy.mock.calls.flat().join('\n');
             expect(output).not.toContain('Total templates:');
         });
 
-        it('should display appropriate message when storage does not exist', async () => {
-            await expect(operation.execute()).resolves.toBeUndefined();
-
-            expect(consoleSpy).toHaveBeenCalledWith('');
-            expect(consoleSpy).toHaveBeenCalledWith('┌────────────────────────────────────────┐');
-            expect(consoleSpy).toHaveBeenCalledWith('│           No templates found           │');
-            expect(consoleSpy).toHaveBeenCalledWith('└────────────────────────────────────────┘');
-            expect(consoleSpy).toHaveBeenCalledWith('');
-            expect(consoleSpy).toHaveBeenCalledWith('To get started:');
-            expect(consoleSpy).toHaveBeenCalledWith('  • Run `tbox save` to add a new template');
-            expect(consoleSpy).toHaveBeenCalledWith('');
+        it('should throw NoTemplatesFoundError when storage does not exist', async () => {
+            await expect(() => operation.execute()).rejects.toThrow(NoTemplatesFoundError);
         });
 
         it('should not display template list when storage does not exist', async () => {
-            await expect(operation.execute()).resolves.toBeUndefined();
+            await expect(() => operation.execute()).rejects.toThrow(NoTemplatesFoundError);
 
             const output = consoleSpy.mock.calls.flat().join('\n');
             expect(output).not.toContain('Total templates:');

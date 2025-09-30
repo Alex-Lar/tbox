@@ -2,7 +2,8 @@ import PrettyError from '@shared/interfaces/pretty-error';
 import { vi } from 'vitest';
 
 export const mockPrettyError = (msg?: string): PrettyError => ({
-    formatForDisplay: vi.fn().mockReturnValue(msg || 'formatted message'),
+    print: vi.fn().mockReturnValue(msg || 'formatted message'),
+    solution: 'solution',
 });
 
 export const mockInvalidPrettyError = () => ({

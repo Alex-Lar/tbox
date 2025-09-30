@@ -1,3 +1,4 @@
 export default interface PrettyError {
-    formatForDisplay(): string;
+    readonly solution: string;
+    print(): void;
 }

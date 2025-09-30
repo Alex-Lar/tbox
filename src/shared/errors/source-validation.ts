@@ -6,6 +6,7 @@ import {
     INFO_SYMBOL,
 } from '../constants/symbols.ts';
 import { InvalidPathsCollection } from '@shared/types/file-system.ts';
+import Logger from '@shared/utils/logger.ts';
 
 export class SourceValidationError extends Error implements PrettyError {
     readonly invalidPaths: InvalidPathsCollection;
@@ -65,5 +66,9 @@ export class SourceValidationError extends Error implements PrettyError {
         }
 
         return parts.join('\n');
+    }
+
+    print(): void {
+        Logger.log(this.formatForDisplay());
     }
 }

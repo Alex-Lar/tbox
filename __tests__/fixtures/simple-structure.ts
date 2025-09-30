@@ -17,7 +17,7 @@ export function getSimpleStructureFixture({
 
     // Storage paths
     const templateStorageRoot = '/root/.local/share';
-    const templateStorageRelativePath = './tb';
+    const templateStorageRelativePath = './tbox';
     const storagePath = join(templateStorageRoot, templateStorageRelativePath);
 
     // Final Paths

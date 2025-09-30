@@ -1,7 +1,6 @@
 import { injectable, inject } from 'tsyringe';
 import Template from '../entities/template.ts';
 import TemplateCopier from '@infrastructure/file-system/copier/template-copier.ts';
-import TemplateExistsError from '@shared/errors/template-exists.ts';
 import { generateTempDirName } from '@shared/utils/random.ts';
 import Transaction from '@shared/patterns/transaction.ts';
 import { existsSync, readdir, remove, rename } from '@shared/utils/file-system.ts';
@@ -12,6 +11,8 @@ import { TemplateNotFoundError } from '@shared/errors/template-not-found.ts';
 import type { LoaderService } from '@shared/interfaces/loader-service.ts';
 import { important } from '@shared/utils/style.ts';
 import { SaveOptions } from '@application/commands/save/types.ts';
+import { NoTemplatesFoundError } from '@shared/errors/no-templates-found.ts';
+import PrettyAggregateError from '@shared/errors/pretty-aggregate-error.ts';
 
 @injectable()
 export default class TemplateRepository {
@@ -26,10 +27,6 @@ export default class TemplateRepository {
     async save(template: Template, options: SaveOptions): Promise<void> {
         const templateStorage = template.destination;
         const templateAlreadyExists = existsSync(templateStorage);
-
-        if (templateAlreadyExists && !options.force) {
-            throw new TemplateExistsError(template.name);
-        }
 
         const execute = async () => {
             this.loader.start('Saving...');
@@ -85,23 +82,38 @@ export default class TemplateRepository {
         await new Transaction({ execute, rollback, commit }).run();
     }
 
+    async deleteMany(templateNames: string[]): Promise<void> {
+        const errors: unknown[] = [];
+
+        for (const name of templateNames) {
+            try {
+                await this.delete(name);
+            } catch (error) {
+                errors.push(error);
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new PrettyAggregateError(errors, `Deletion completed with errors`);
+        }
+    }
+
     /**
      * @throws {TemplateNotFoundError} if template does not exists
      */
     async delete(templateName: string): Promise<void> {
+        this.loader.start(`Deleting '${important(templateName)}'...`);
         const templatePath = join(getStoragePath(), templateName);
 
         if (!existsSync(templatePath)) {
+            this.loader.stop();
             throw new TemplateNotFoundError(templateName);
         }
 
         try {
-            this.loader.start(`Deleting ${important(templateName)}...`);
-
             await remove(templatePath);
         } catch (error) {
             this.loader.fail('Deletion failed!');
-
             throw new Error(`Error occurred while deleting template: ${templateName}`, {
                 cause: error,
             });
@@ -112,10 +124,18 @@ export default class TemplateRepository {
 
     async list(): Promise<string[]> {
         try {
-            return await readdir(getStoragePath());
+            let entries = await readdir(getStoragePath());
+
+            if (!entries.length) throw new NoTemplatesFoundError();
+
+            return entries;
         } catch (error) {
             if (isNodeError(error) && error.code === 'ENOENT') {
-                return [] as string[];
+                throw new NoTemplatesFoundError();
+            }
+
+            if (error instanceof NoTemplatesFoundError) {
+                throw error;
             }
 
             throw new Error('Cannot access storage directory', { cause: error });

@@ -66,7 +66,12 @@ export default class FileSystemScanner {
             throw error;
         }
 
-        this.loader.succeed('Scan is completed!');
+        if (!fsEntries.length) {
+            this.loader.stop();
+        } else {
+            this.loader.succeed('Scan is completed!');
+        }
+
         return fsEntries;
     }
 }
